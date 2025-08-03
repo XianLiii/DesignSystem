@@ -1,0 +1,1163 @@
+import { reactive, ref, computed } from 'vue'
+
+// 历史记录相关
+export const historyRecords = ref([])
+export const currentHistoryIndex = ref(-1)
+
+// 基础Token数据 - 保持不变，确保原子性
+export const baseTokens = reactive({
+  colors: {
+    'primary-500': { value: '#191919', type: 'color', usage: '基础主要色调值' },
+    'primary-600': { value: '#000000', type: 'color', usage: '基础主要色调深色值' },
+    'primary-700': { value: '#0a0a0a', type: 'color', usage: '基础主要色调最深值' },
+    'secondary-500': { value: '#999999', type: 'color', usage: '次要色调' },
+    'secondary-600': { value: '#777777', type: 'color', usage: '次要色调深色' },
+    'secondary-700': { value: '#555555', type: 'color', usage: '次要色调最深' },
+    'white': { value: '#ffffff', type: 'color', usage: '基础白色值' },
+    'gray-50': { value: '#f9f9f9', type: 'color', usage: '基础最浅灰色值' },
+    'gray-100': { value: '#f5f5f5', type: 'color', usage: '基础浅灰色值' },
+    'gray-200': { value: '#e5e5e5', type: 'color', usage: '基础灰色值' },
+    'gray-300': { value: '#d9d9d9', type: 'color', usage: '基础深灰色值' },
+    'gray-400': { value: '#a3a3a3', type: 'color', usage: '基础较深灰色值' },
+    'gray-500': { value: '#737373', type: 'color', usage: '基础中等灰色值' },
+    'gray-900': { value: '#111827', type: 'color', usage: '基础深色文字值' },
+    'blue-500': { value: '#3b82f6', type: 'color', usage: '蓝色' },
+    'red-50': { value: '#fef2f2', type: 'color', usage: '浅红色' },
+    'red-300': { value: '#fca5a5', type: 'color', usage: '红色' },
+    'red-600': { value: '#dc2626', type: 'color', usage: '深红色' },
+    'green-50': { value: '#f0fdf4', type: 'color', usage: '浅绿色' },
+    'green-300': { value: '#86efac', type: 'color', usage: '绿色' },
+    'green-600': { value: '#16a34a', type: 'color', usage: '深绿色' }
+  },
+  spacing: {
+    'spacing-1': { value: '4px', type: 'spacing', usage: '基础最小间距值' },
+    'spacing-2': { value: '8px', type: 'spacing', usage: '基础小间距值' },
+    'spacing-3': { value: '12px', type: 'spacing', usage: '基础中等间距值' },
+    'spacing-4': { value: '16px', type: 'spacing', usage: '基础标准间距值' },
+    'spacing-5': { value: '20px', type: 'spacing', usage: '基础大间距值' },
+    'spacing-6': { value: '24px', type: 'spacing', usage: '基础超大间距值' }
+  },
+  typography: {
+    'font-size-sm': { value: '14px', type: 'typography', usage: '基础小字体尺寸值' },
+    'font-size-base': { value: '16px', type: 'typography', usage: '基础标准字体尺寸值' },
+    'font-size-lg': { value: '24px', type: 'typography', usage: '基础大字体尺寸值' },
+    'font-size-xl': { value: '40px', type: 'typography', usage: '基础超大字体尺寸值' },
+    'font-weight-normal': { value: '400', type: 'typography', usage: '基础常规字重值' },
+    'font-weight-bold': { value: '700', type: 'typography', usage: '基础粗体字重值' }
+  },
+  border: {
+    'border-radius-sm': { value: '1px', type: 'border', usage: '基础小圆角值' },
+    'border-radius-md': { value: '4px', type: 'border', usage: '基础中等圆角值' },
+    'border-radius-lg': { value: '8px', type: 'border', usage: '基础大圆角值' }
+  }
+})
+
+// 语义Token数据 - 重构为场景化概念
+export const semanticTokens = reactive({
+  // 表面色彩语义（Surface Colors）
+  surface: {
+    'primary-surface': { 
+      value: 'primary-500', 
+      type: 'background', 
+      usage: '主要交互表面的背景色',
+      baseToken: 'colors.primary-500'
+    },
+    'primary-surface-hover': { 
+      value: 'primary-600', 
+      type: 'background', 
+      usage: '主要交互表面悬停时的背景色',
+      baseToken: 'colors.primary-600'
+    },
+    'primary-surface-active': { 
+      value: 'primary-700', 
+      type: 'background', 
+      usage: '主要交互表面激活时的背景色',
+      baseToken: 'colors.primary-700'
+    },
+    'secondary-surface': { 
+      value: 'white', 
+      type: 'background', 
+      usage: '次要交互表面的背景色',
+      baseToken: 'colors.white'
+    },
+    'secondary-surface-hover': { 
+      value: 'gray-50', 
+      type: 'background', 
+      usage: '次要交互表面悬停时的背景色',
+      baseToken: 'colors.gray-50'
+    },
+    'secondary-surface-active': { 
+      value: 'gray-100', 
+      type: 'background', 
+      usage: '次要交互表面激活时的背景色',
+      baseToken: 'colors.gray-100'
+    },
+    'disabled-surface': { 
+      value: 'gray-100', 
+      type: 'background', 
+      usage: '禁用状态表面的背景色',
+      baseToken: 'colors.gray-100'
+    },
+    'error-surface': { 
+      value: 'red-50', 
+      type: 'background', 
+      usage: '错误状态表面的背景色',
+      baseToken: 'colors.red-50'
+    },
+    'success-surface': { 
+      value: 'green-50', 
+      type: 'background', 
+      usage: '成功状态表面的背景色',
+      baseToken: 'colors.green-50'
+    },
+    'input-surface': { 
+      value: 'white', 
+      type: 'background', 
+      usage: '输入控件的表面背景色',
+      baseToken: 'colors.white'
+    }
+  },
+  
+  // 文字色彩语义（Text Colors）
+  text: {
+    'primary-text': { 
+      value: 'white', 
+      type: 'text', 
+      usage: '在主要表面上的文字颜色',
+      baseToken: 'colors.white'
+    },
+    'secondary-text': { 
+      value: 'secondary-500', 
+      type: 'text', 
+      usage: '次要重要性的文字颜色',
+      baseToken: 'colors.secondary-500'
+    },
+    'secondary-text-on-surface': { 
+      value: 'white', 
+      type: 'text', 
+      usage: '在次要表面上的文字颜色',
+      baseToken: 'colors.white'
+    },
+    'body-text': { 
+      value: 'gray-900', 
+      type: 'text', 
+      usage: '正文内容的文字颜色',
+      baseToken: 'colors.gray-900'
+    },
+    'disabled-text': { 
+      value: 'gray-400', 
+      type: 'text', 
+      usage: '禁用状态的文字颜色',
+      baseToken: 'colors.gray-400'
+    },
+    'error-text': { 
+      value: 'red-600', 
+      type: 'text', 
+      usage: '错误信息的文字颜色',
+      baseToken: 'colors.red-600'
+    },
+    'success-text': { 
+      value: 'green-600', 
+      type: 'text', 
+      usage: '成功信息的文字颜色',
+      baseToken: 'colors.green-600'
+    },
+    'muted-text': { 
+      value: 'gray-500', 
+      type: 'text', 
+      usage: '减弱的辅助文字颜色',
+      baseToken: 'colors.gray-500'
+    }
+  },
+  
+  // 边框语义（Border Colors）  
+  border: {
+    'interactive-border': { 
+      value: 'gray-300', 
+      type: 'border', 
+      usage: '可交互元素的默认边框色',
+      baseToken: 'colors.gray-300'
+    },
+    'interactive-border-focus': { 
+      value: 'blue-500', 
+      type: 'border', 
+      usage: '可交互元素聚焦时的边框色',
+      baseToken: 'colors.blue-500'
+    },
+    'interactive-border-hover': { 
+      value: 'secondary-500', 
+      type: 'border', 
+      usage: '可交互元素悬停时的边框色',
+      baseToken: 'colors.secondary-500'
+    },
+    'disabled-border': { 
+      value: 'gray-200', 
+      type: 'border', 
+      usage: '禁用状态的边框色',
+      baseToken: 'colors.gray-200'
+    },
+    'error-border': { 
+      value: 'red-300', 
+      type: 'border', 
+      usage: '错误状态的边框色',
+      baseToken: 'colors.red-300'
+    },
+    'primary-border': { 
+      value: 'secondary-500', 
+      type: 'border', 
+      usage: '主要重要性的边框色',
+      baseToken: 'colors.secondary-500'
+    },
+    'subtle-border': { 
+      value: 'gray-200', 
+      type: 'border', 
+      usage: '细微的分隔边框色',
+      baseToken: 'colors.gray-200'
+    },
+    'success-border': { 
+      value: 'green-300', 
+      type: 'border', 
+      usage: '成功状态的边框色',
+      baseToken: 'colors.green-300'
+    }
+  },
+
+  // 间距语义（Spacing）
+  spacing: {
+    'compact-spacing': { 
+      value: 'spacing-1', 
+      type: 'spacing', 
+      usage: '紧凑布局的间距',
+      baseToken: 'spacing.spacing-1'
+    },
+    'cozy-spacing': { 
+      value: 'spacing-2', 
+      type: 'spacing', 
+      usage: '舒适布局的间距',
+      baseToken: 'spacing.spacing-2'
+    },
+    'comfortable-spacing': { 
+      value: 'spacing-3', 
+      type: 'spacing', 
+      usage: '宽松布局的间距',
+      baseToken: 'spacing.spacing-3'
+    },
+    'spacious-spacing': { 
+      value: 'spacing-4', 
+      type: 'spacing', 
+      usage: '宽敞布局的间距',
+      baseToken: 'spacing.spacing-4'
+    },
+    'generous-spacing': { 
+      value: 'spacing-5', 
+      type: 'spacing', 
+      usage: '慷慨布局的间距',
+      baseToken: 'spacing.spacing-5'
+    },
+    'luxurious-spacing': { 
+      value: 'spacing-6', 
+      type: 'spacing', 
+      usage: '奢华布局的间距',
+      baseToken: 'spacing.spacing-6'
+    }
+  },
+
+  // 字体语义（Typography）
+  typography: {
+    'body-text-size': { 
+      value: 'font-size-base', 
+      type: 'typography', 
+      usage: '正文的字体大小',
+      baseToken: 'typography.font-size-base'
+    },
+    'heading-text-size': { 
+      value: 'font-size-lg', 
+      type: 'typography', 
+      usage: '标题的字体大小',
+      baseToken: 'typography.font-size-lg'
+    },
+    'small-text-size': { 
+      value: 'font-size-sm', 
+      type: 'typography', 
+      usage: '辅助信息的字体大小',
+      baseToken: 'typography.font-size-sm'
+    },
+    'large-text-size': { 
+      value: 'font-size-xl', 
+      type: 'typography', 
+      usage: '突出内容的字体大小',
+      baseToken: 'typography.font-size-xl'
+    },
+    'emphasis-text-weight': { 
+      value: 'font-weight-bold', 
+      type: 'typography', 
+      usage: '强调文字的字重',
+      baseToken: 'typography.font-weight-bold'
+    },
+    'normal-text-weight': { 
+      value: 'font-weight-normal', 
+      type: 'typography', 
+      usage: '常规文字的字重',
+      baseToken: 'typography.font-weight-normal'
+    }
+  },
+
+  // 圆角语义（Border Radius）
+  radius: {
+    'subtle-radius': { 
+      value: 'border-radius-sm', 
+      type: 'border', 
+      usage: '细微的圆角效果',
+      baseToken: 'border.border-radius-sm'
+    },
+    'moderate-radius': { 
+      value: 'border-radius-md', 
+      type: 'border', 
+      usage: '适中的圆角效果',
+      baseToken: 'border.border-radius-md'
+    },
+    'prominent-radius': { 
+      value: 'border-radius-lg', 
+      type: 'border', 
+      usage: '明显的圆角效果',
+      baseToken: 'border.border-radius-lg'
+    }
+  }
+})
+
+// 组件Token数据 - 按变体组织，每个变体包含完整的样式组合
+export const componentTokens = reactive({
+  button: {
+    // 主按钮变体 - 完整样式组合
+    'button-primary-default': {
+      type: 'component',
+      usage: '主按钮默认状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.primary-surface' },
+        text: { semanticToken: 'text.primary-text' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+      }
+    },
+    'button-primary-hover': {
+      type: 'component',
+      usage: '主按钮悬停状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.primary-surface-hover' },
+        text: { semanticToken: 'text.primary-text' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+      }
+    },
+    'button-primary-active': {
+      type: 'component',
+      usage: '主按钮激活状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.primary-surface-active' },
+        text: { semanticToken: 'text.primary-text' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+      }
+    },
+    'button-primary-disabled': {
+      type: 'component',
+      usage: '主按钮禁用状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.disabled-surface' },
+        text: { semanticToken: 'text.disabled-text' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+      }
+    },
+
+    // 次要按钮变体 - 完整样式组合
+    'button-secondary-default': {
+      type: 'component',
+      usage: '次要按钮默认状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.secondary-surface' },
+        text: { semanticToken: 'text.secondary-text' },
+        border: { semanticToken: 'border.primary-border' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+      }
+    },
+    'button-secondary-hover': {
+      type: 'component',
+      usage: '次要按钮悬停状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.secondary-surface-hover' },
+        text: { semanticToken: 'text.secondary-text-on-surface' },
+        border: { semanticToken: 'border.interactive-border-hover' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+      }
+    },
+    'button-secondary-active': {
+      type: 'component',
+      usage: '次要按钮激活状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.secondary-surface-active' },
+        text: { semanticToken: 'text.secondary-text-on-surface' },
+        border: { semanticToken: 'border.interactive-border-hover' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+      }
+    },
+    'button-secondary-disabled': {
+      type: 'component',
+      usage: '次要按钮禁用状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.disabled-surface' },
+        text: { semanticToken: 'text.disabled-text' },
+        border: { semanticToken: 'border.disabled-border' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+      }
+    },
+
+    // 小按钮变体 - 主按钮的小尺寸版本
+    'button-primary-small-default': {
+      type: 'component',
+      usage: '小尺寸主按钮默认状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.primary-surface' },
+        text: { semanticToken: 'text.primary-text' },
+        borderRadius: { semanticToken: 'radius.subtle-radius' },
+        padding: { semanticToken: 'spacing.compact-spacing' },
+        fontSize: { semanticToken: 'typography.small-text-size' },
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+      }
+    },
+
+    // 大按钮变体 - 主按钮的大尺寸版本
+    'button-primary-large-default': {
+      type: 'component',
+      usage: '大尺寸主按钮默认状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.primary-surface' },
+        text: { semanticToken: 'text.primary-text' },
+        borderRadius: { semanticToken: 'radius.prominent-radius' },
+        padding: { semanticToken: 'spacing.comfortable-spacing' },
+        fontSize: { semanticToken: 'typography.heading-text-size' },
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+      }
+    }
+  },
+
+  input: {
+    // 标准输入框变体 - 完整样式组合
+    'input-standard-default': {
+      type: 'component',
+      usage: '标准输入框默认状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.input-surface' },
+        border: { semanticToken: 'border.interactive-border' },
+        text: { semanticToken: 'text.body-text' },
+        placeholder: { semanticToken: 'text.muted-text' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' }
+      }
+    },
+    'input-standard-focus': {
+      type: 'component',
+      usage: '标准输入框聚焦状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.input-surface' },
+        border: { semanticToken: 'border.interactive-border-focus' },
+        text: { semanticToken: 'text.body-text' },
+        placeholder: { semanticToken: 'text.muted-text' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' }
+      }
+    },
+    'input-standard-disabled': {
+      type: 'component',
+      usage: '标准输入框禁用状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.disabled-surface' },
+        border: { semanticToken: 'border.disabled-border' },
+        text: { semanticToken: 'text.disabled-text' },
+        placeholder: { semanticToken: 'text.disabled-text' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' }
+      }
+    },
+    'input-standard-error': {
+      type: 'component',
+      usage: '标准输入框错误状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.error-surface' },
+        border: { semanticToken: 'border.error-border' },
+        text: { semanticToken: 'text.error-text' },
+        placeholder: { semanticToken: 'text.muted-text' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' }
+      }
+    },
+    'input-standard-success': {
+      type: 'component',
+      usage: '标准输入框成功状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.success-surface' },
+        border: { semanticToken: 'border.success-border' },
+        text: { semanticToken: 'text.success-text' },
+        placeholder: { semanticToken: 'text.muted-text' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' }
+      }
+    },
+
+    // 小尺寸输入框变体
+    'input-small-default': {
+      type: 'component',
+      usage: '小尺寸输入框默认状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.input-surface' },
+        border: { semanticToken: 'border.interactive-border' },
+        text: { semanticToken: 'text.body-text' },
+        placeholder: { semanticToken: 'text.muted-text' },
+        borderRadius: { semanticToken: 'radius.subtle-radius' },
+        padding: { semanticToken: 'spacing.compact-spacing' },
+        fontSize: { semanticToken: 'typography.small-text-size' }
+      }
+    },
+
+    // 大尺寸输入框变体
+    'input-large-default': {
+      type: 'component',
+      usage: '大尺寸输入框默认状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.input-surface' },
+        border: { semanticToken: 'border.interactive-border' },
+        text: { semanticToken: 'text.body-text' },
+        placeholder: { semanticToken: 'text.muted-text' },
+        borderRadius: { semanticToken: 'radius.prominent-radius' },
+        padding: { semanticToken: 'spacing.comfortable-spacing' },
+        fontSize: { semanticToken: 'typography.heading-text-size' }
+      }
+    }
+  },
+
+  common: {
+    // 通用文字组件Token
+    'text-primary-default': {
+      type: 'component',
+      usage: '主要文字内容的默认样式应用',
+      semanticToken: 'text.body-text'
+    },
+    'text-secondary-default': {
+      type: 'component', 
+      usage: '次要文字内容的默认样式应用',
+      semanticToken: 'text.secondary-text'
+    },
+    'text-muted-default': {
+      type: 'component',
+      usage: '弱化文字内容的默认样式应用',
+      semanticToken: 'text.muted-text'
+    },
+
+    // 通用背景组件Token
+    'bg-primary-default': {
+      type: 'component',
+      usage: '主要背景区域的默认样式应用',
+      semanticToken: 'surface.primary-surface'
+    },
+    'bg-secondary-default': {
+      type: 'component',
+      usage: '次要背景区域的默认样式应用',
+      semanticToken: 'surface.secondary-surface'
+    },
+
+    // 通用边框组件Token
+    'border-primary-default': {
+      type: 'component',
+      usage: '主要边框的默认样式应用',
+      semanticToken: 'border.primary-border'
+    },
+    'border-subtle-default': {
+      type: 'component',
+      usage: '细微边框的默认样式应用',
+      semanticToken: 'border.subtle-border'
+    },
+
+    // 通用间距组件Token
+    'spacing-compact-default': {
+      type: 'component',
+      usage: '紧凑间距的布局应用',
+      semanticToken: 'spacing.compact-spacing'
+    },
+    'spacing-cozy-default': {
+      type: 'component',
+      usage: '舒适间距的布局应用',
+      semanticToken: 'spacing.cozy-spacing'
+    },
+    'spacing-comfortable-default': {
+      type: 'component',
+      usage: '宽松间距的布局应用',
+      semanticToken: 'spacing.comfortable-spacing'
+    },
+    'spacing-spacious-default': {
+      type: 'component',
+      usage: '宽敞间距的布局应用',
+      semanticToken: 'spacing.spacious-spacing'
+    },
+
+    // 通用字体组件Token
+    'typography-body-default': {
+      type: 'component',
+      usage: '正文字体的默认样式应用',
+      semanticToken: 'typography.body-text-size'
+    },
+    'typography-heading-default': {
+      type: 'component',
+      usage: '标题字体的默认样式应用',
+      semanticToken: 'typography.heading-text-size'
+    },
+    'typography-small-default': {
+      type: 'component',
+      usage: '小字体的默认样式应用',
+      semanticToken: 'typography.small-text-size'
+    },
+    'typography-emphasis-default': {
+      type: 'component',
+      usage: '强调字重的默认样式应用',
+      semanticToken: 'typography.emphasis-text-weight'
+    },
+
+    // 通用圆角组件Token
+    'radius-subtle-default': {
+      type: 'component',
+      usage: '细微圆角的默认界面应用',
+      semanticToken: 'radius.subtle-radius'
+    },
+    'radius-moderate-default': {
+      type: 'component',
+      usage: '适中圆角的默认界面应用',
+      semanticToken: 'radius.moderate-radius'
+    },
+    'radius-prominent-default': {
+      type: 'component',
+      usage: '明显圆角的默认界面应用',
+      semanticToken: 'radius.prominent-radius'
+    }
+  }
+})
+
+// Token统计（动态计算）
+// 基于Token名称的唯一性进行统计
+export const tokenStats = computed(() => {
+  const allTokenData = getAllTokens()
+  
+  // 使用Set来确保唯一性
+  const uniqueBaseTokenNames = new Set()
+  const uniqueSemanticTokenNames = new Set()
+  const uniqueComponentTokenNames = new Set()
+  const uniqueComponents = new Set()
+  
+  allTokenData.forEach(token => {
+    // 基础Token名称：只要名称不一样就算一个
+    if (token.baseToken) {
+      uniqueBaseTokenNames.add(token.baseToken)
+    }
+    
+    // 语义Token名称：只要名称不一样就算一个
+    if (token.semanticToken) {
+      uniqueSemanticTokenNames.add(token.semanticToken)
+    }
+    
+    // 组件Token名称：完整的组件Token名称（包含样式属性）
+    if (token.componentToken) {
+      uniqueComponentTokenNames.add(token.componentToken)
+    }
+    
+    // 组件名称
+    if (token.componentName) {
+      uniqueComponents.add(token.componentName)
+    }
+  })
+
+  return {
+    baseTokenCount: uniqueBaseTokenNames.size,
+    semanticTokenCount: uniqueSemanticTokenNames.size,
+    componentTokenCount: uniqueComponentTokenNames.size,
+    componentCount: uniqueComponents.size
+  }
+})
+
+// 获取基础Token数据的辅助函数
+export function getBaseTokenData(baseTokenPath) {
+  const [category, tokenName] = baseTokenPath.split('.')
+  return baseTokens[category]?.[tokenName]
+}
+
+// 获取所有Token（每个组件Token展开为多行，每行代表一个样式属性）
+export function getAllTokens() {
+  const allTokens = []
+  
+  Object.entries(componentTokens).forEach(([category, categoryTokens]) => {
+    Object.entries(categoryTokens).forEach(([name, token]) => {
+      // 解析Token名称以提取变体和状态信息
+      const nameParts = name.split('-')
+      let variant = ''
+      let componentState = ''
+      
+      // 分析Token名称结构
+      if (nameParts.length >= 2) {
+        const lastPart = nameParts[nameParts.length - 1]
+        const stateKeywords = ['default', 'hover', 'active', 'disabled', 'focus', 'error', 'success']
+        
+        if (stateKeywords.includes(lastPart)) {
+          componentState = lastPart
+          variant = nameParts.slice(1, -1).join('-') // 去掉组件名和状态，保留变体部分
+        } else {
+          componentState = '不可交互'
+          variant = nameParts.slice(1).join('-') // 去掉组件名，保留变体部分
+        }
+      }
+
+      // 处理Token的样式属性
+      if (token.styles) {
+        // 新结构：每个Token包含多个样式属性
+        Object.entries(token.styles).forEach(([styleProp, styleData]) => {
+          const semanticTokenPath = styleData.semanticToken
+          let semanticTokenData = null
+          let baseTokenPath = ''
+          let baseTokenData = null
+
+          // 获取语义Token信息
+          if (semanticTokenPath) {
+            const [semanticCategory, semanticTokenName] = semanticTokenPath.split('.')
+            semanticTokenData = semanticTokens[semanticCategory]?.[semanticTokenName]
+            baseTokenPath = semanticTokenData?.baseToken
+            baseTokenData = baseTokenPath ? getBaseTokenData(baseTokenPath) : null
+          }
+
+          allTokens.push({
+            componentToken: `${category}.${name}.${styleProp}`,
+            componentName: category,
+            variant: variant,
+            componentState: componentState,
+            componentUsage: `${token.usage} - ${styleProp}样式`,
+            semanticToken: semanticTokenPath || '',
+            semanticType: semanticTokenData?.type || '',
+            semanticUsage: semanticTokenData?.usage || '',
+            baseToken: baseTokenPath || '',
+            baseType: baseTokenData?.type || '',
+            baseUsage: baseTokenData?.usage || '',
+            baseValue: baseTokenData?.value || ''
+          })
+        })
+      } else if (token.semanticToken) {
+        // 兼容旧结构
+        const semanticTokenPath = token.semanticToken
+        const [semanticCategory, semanticTokenName] = semanticTokenPath.split('.')
+        const semanticTokenData = semanticTokens[semanticCategory]?.[semanticTokenName]
+        const baseTokenPath = semanticTokenData?.baseToken
+        const baseTokenData = baseTokenPath ? getBaseTokenData(baseTokenPath) : null
+
+        allTokens.push({
+          componentToken: `${category}.${name}`,
+          componentName: category,
+          variant: variant,
+          componentState: componentState,
+          componentUsage: token.usage,
+          semanticToken: semanticTokenPath || '',
+          semanticType: semanticTokenData?.type || '',
+          semanticUsage: semanticTokenData?.usage || '',
+          baseToken: baseTokenPath || '',
+          baseType: baseTokenData?.type || '',
+          baseUsage: baseTokenData?.usage || '',
+          baseValue: baseTokenData?.value || ''
+        })
+      }
+    })
+  })
+  
+  return allTokens
+}
+
+// 获取指定组件的Token
+export function getComponentTokens(componentName) {
+  const componentData = componentTokens[componentName]
+  if (!componentData) return []
+
+  const tokens = []
+  Object.entries(componentData).forEach(([name, token]) => {
+    // 解析Token名称以提取变体和状态信息
+    const nameParts = name.split('-')
+    let variant = ''
+    let componentState = ''
+    
+    // 分析Token名称结构
+    if (nameParts.length >= 2) {
+      const lastPart = nameParts[nameParts.length - 1]
+      const stateKeywords = ['default', 'hover', 'active', 'disabled', 'focus', 'error', 'success']
+      
+      if (stateKeywords.includes(lastPart)) {
+        componentState = lastPart
+        variant = nameParts.slice(1, -1).join('-') // 去掉组件名和状态，保留变体部分
+      } else {
+        componentState = '不可交互'
+        variant = nameParts.slice(1).join('-') // 去掉组件名，保留变体部分
+      }
+    }
+
+    // 处理Token的样式属性
+    if (token.styles) {
+      // 新结构：每个Token包含多个样式属性
+      Object.entries(token.styles).forEach(([styleProp, styleData]) => {
+        const semanticTokenPath = styleData.semanticToken
+        let semanticTokenData = null
+        let baseTokenPath = ''
+        let baseTokenData = null
+
+        // 获取语义Token信息
+        if (semanticTokenPath) {
+          const [semanticCategory, semanticTokenName] = semanticTokenPath.split('.')
+          semanticTokenData = semanticTokens[semanticCategory]?.[semanticTokenName]
+          baseTokenPath = semanticTokenData?.baseToken
+          baseTokenData = baseTokenPath ? getBaseTokenData(baseTokenPath) : null
+        }
+
+        tokens.push({
+          componentToken: `${componentName}.${name}.${styleProp}`,
+          componentName: componentName,
+          variant: variant,
+          componentState: componentState,
+          componentUsage: `${token.usage} - ${styleProp}样式`,
+          semanticToken: semanticTokenPath || '',
+          semanticType: semanticTokenData?.type || '',
+          semanticUsage: semanticTokenData?.usage || '',
+          baseToken: baseTokenPath || '',
+          baseType: baseTokenData?.type || '',
+          baseUsage: baseTokenData?.usage || '',
+          baseValue: baseTokenData?.value || ''
+        })
+      })
+    } else if (token.semanticToken) {
+      // 兼容旧结构
+      const semanticTokenPath = token.semanticToken
+      const [semanticCategory, semanticTokenName] = semanticTokenPath.split('.')
+      const semanticTokenData = semanticTokens[semanticCategory]?.[semanticTokenName]
+      const baseTokenPath = semanticTokenData?.baseToken
+      const baseTokenData = baseTokenPath ? getBaseTokenData(baseTokenPath) : null
+
+      tokens.push({
+        componentToken: `${componentName}.${name}`,
+        componentName: componentName,
+        variant: variant,
+        componentState: componentState,
+        componentUsage: token.usage,
+        semanticToken: semanticTokenPath || '',
+        semanticType: semanticTokenData?.type || '',
+        semanticUsage: semanticTokenData?.usage || '',
+        baseToken: baseTokenPath || '',
+        baseType: baseTokenData?.type || '',
+        baseUsage: baseTokenData?.usage || '',
+        baseValue: baseTokenData?.value || ''
+      })
+    }
+  })
+
+  return tokens
+}
+
+// 更新Token值的函数
+export function updateTokenValue(baseTokenPath, newValue) {
+  const [category, tokenName] = baseTokenPath.split('.')
+  const token = baseTokens[category]?.[tokenName]
+  
+  if (token) {
+    // 记录历史
+    const historyRecord = {
+      timestamp: new Date().toISOString(),
+      tokenPath: baseTokenPath,
+      oldValue: token.value,
+      newValue: newValue,
+      action: 'update'
+    }
+    
+    historyRecords.value.push(historyRecord)
+    currentHistoryIndex.value = historyRecords.value.length - 1
+    
+    // 更新值
+    token.value = newValue
+    return true
+  }
+  return false
+}
+
+// 回滚历史记录
+export function revertHistoryRecord(index) {
+  const record = historyRecords.value[index]
+  if (record && record.action === 'update') {
+    const [category, tokenName] = record.tokenPath.split('.')
+    const token = baseTokens[category]?.[tokenName]
+    
+    if (token) {
+      token.value = record.oldValue
+      
+      // 创建回滚记录
+      const revertRecord = {
+        timestamp: new Date().toISOString(),
+        tokenPath: record.tokenPath,
+        oldValue: record.newValue,
+        newValue: record.oldValue,
+        action: 'revert',
+        originalIndex: index
+      }
+      
+      historyRecords.value.push(revertRecord)
+      currentHistoryIndex.value = historyRecords.value.length - 1
+      
+      return true
+    }
+  }
+  return false
+}
+
+// CSV导入功能 - 兼容新架构
+export async function importTokensFromCSV(csvData) {
+  // 清空现有Token
+  Object.keys(baseTokens).forEach(category => {
+    Object.keys(baseTokens[category]).forEach(key => {
+      delete baseTokens[category][key]
+    })
+  })
+  Object.keys(semanticTokens).forEach(category => {
+    Object.keys(semanticTokens[category]).forEach(key => {
+      delete semanticTokens[category][key]
+    })
+  })
+  Object.keys(componentTokens).forEach(category => {
+    Object.keys(componentTokens[category]).forEach(key => {
+      delete componentTokens[category][key]
+    })
+  })
+
+  const baseTokensMap = new Map()
+  const semanticTokensMap = new Map()
+  const componentTokensMap = new Map()
+
+  // 第一遍：收集所有唯一的Token
+  csvData.forEach(row => {
+    const componentName = getComponentKeyFromLabel(row['组件'] || row['componentName'])
+    const variantName = getVariantKeyFromLabel(row['变体'] || row['variant'])
+    const stateName = getStateKeyFromLabel(row['状态'] || row['componentState'])
+
+    // 基础Token逻辑
+    if (row['基础Token'] || row['baseToken']) {
+      const baseTokenName = row['基础Token'] || row['baseToken']
+      const baseValue = row['基础值'] || row['baseValue']
+      const baseType = getBaseTypeKeyFromLabel(row['基础类型'] || row['baseType'])
+      const baseUsage = row['基础用途'] || row['baseUsage']
+
+      if (baseTokenName && baseValue && baseType) {
+        const [category, name] = baseTokenName.split('.')
+        if (category && name) {
+          const categoryKey = category
+          const tokenKey = name
+          
+          if (!baseTokensMap.has(`${categoryKey}.${tokenKey}`)) {
+            baseTokensMap.set(`${categoryKey}.${tokenKey}`, {
+              value: baseValue,
+              type: baseType,
+              usage: baseUsage || '',
+              category: categoryKey
+            })
+          }
+        }
+      }
+    }
+
+    // 语义Token逻辑
+    if (row['语义Token'] || row['semanticToken']) {
+      const semanticTokenName = row['语义Token'] || row['semanticToken']
+      const semanticType = getSemanticTypeKeyFromLabel(row['语义类型'] || row['semanticType'])
+      const semanticUsage = row['语义用途'] || row['semanticUsage']
+      const baseTokenPath = row['基础Token'] || row['baseToken']
+
+      if (semanticTokenName && semanticType && baseTokenPath) {
+        const [category, name] = semanticTokenName.split('.')
+        if (category && name) {
+          if (!semanticTokensMap.has(semanticTokenName)) {
+            semanticTokensMap.set(semanticTokenName, {
+              value: name,
+              type: semanticType,
+              usage: semanticUsage || '',
+              baseToken: baseTokenPath,
+              category: category
+            })
+          }
+        }
+      }
+    }
+
+    // 组件Token逻辑 - 新的扁平化结构
+    if (componentName && variantName) {
+      let componentTokenKey = variantName
+      
+      // 如果有状态，将状态添加到Token名称中
+      if (stateName && stateName !== '不可交互') {
+        componentTokenKey = `${variantName}-${stateName}`
+      }
+      
+      const fullComponentKey = `${componentName}.${componentTokenKey}`
+      const semanticTokenPath = row['语义Token'] || row['semanticToken']
+      
+      if (!componentTokensMap.has(fullComponentKey)) {
+        componentTokensMap.set(fullComponentKey, {
+          type: 'component',
+          usage: row['组件用途'] || row['componentUsage'] || '',
+          semanticToken: semanticTokenPath || ''
+        })
+      }
+    }
+  })
+
+  // 重建baseTokens
+  baseTokensMap.forEach((tokenData, key) => {
+    const category = tokenData.category
+    if (!baseTokens[category]) {
+      baseTokens[category] = {}
+    }
+    const [, name] = key.split('.')
+    baseTokens[category][name] = {
+      value: tokenData.value,
+      type: tokenData.type,
+      usage: tokenData.usage
+    }
+  })
+
+  // 重建semanticTokens
+  semanticTokensMap.forEach((tokenData, key) => {
+    const category = tokenData.category
+    if (!semanticTokens[category]) {
+      semanticTokens[category] = {}
+    }
+    const [, name] = key.split('.')
+    semanticTokens[category][name] = {
+      value: tokenData.value,
+      type: tokenData.type,
+      usage: tokenData.usage,
+      baseToken: tokenData.baseToken
+    }
+  })
+
+  // 重建componentTokens - 新的扁平化结构
+  componentTokensMap.forEach((tokenData, key) => {
+    const [category, name] = key.split('.')
+    if (!componentTokens[category]) {
+      componentTokens[category] = {}
+    }
+    
+    componentTokens[category][name] = {
+      type: tokenData.type,
+      usage: tokenData.usage,
+      semanticToken: tokenData.semanticToken
+    }
+  })
+}
+
+// CSV导入辅助函数
+function getComponentKeyFromLabel(label) {
+  const componentLabels = {
+    '按钮': 'button',
+    '输入框': 'input',
+    '通用': 'common'
+  }
+  return componentLabels[label] || label
+}
+
+function getVariantKeyFromLabel(label) {
+  const variantLabels = {
+    // 按钮变体
+    '主按钮背景': 'button-primary-bg',
+    '主按钮文字': 'button-primary-text',
+    '次要按钮背景': 'button-secondary-bg',
+    '次要按钮文字': 'button-secondary-text',
+    '次要按钮边框': 'button-secondary-border',
+    
+    // 输入框变体
+    '输入框背景': 'input-bg',
+    '输入框边框': 'input-border',
+    '输入框文字': 'input-text',
+    
+    // 通用变体
+    '主要文字': 'text-primary',
+    '次要文字': 'text-secondary',
+    '弱化文字': 'text-muted',
+    '主要背景': 'bg-primary',
+    '次要背景': 'bg-secondary',
+    '主要边框': 'border-primary',
+    '细微边框': 'border-subtle',
+    '紧凑间距': 'spacing-compact',
+    '舒适间距': 'spacing-cozy',
+    '宽松间距': 'spacing-comfortable',
+    '宽敞间距': 'spacing-spacious',
+    '正文字体': 'typography-body',
+    '标题字体': 'typography-heading',
+    '小字体': 'typography-small',
+    '强调字重': 'typography-emphasis',
+    '细微圆角': 'radius-subtle',
+    '适中圆角': 'radius-moderate',
+    '明显圆角': 'radius-prominent'
+  }
+  return variantLabels[label] || label
+}
+
+function getStateKeyFromLabel(label) {
+  const stateLabels = {
+    '默认': 'default',
+    '悬停': 'hover',
+    '激活': 'active',
+    '禁用': 'disabled',
+    '聚焦': 'focus',
+    '错误': 'error',
+    '不可交互': ''
+  }
+  return stateLabels[label] || label
+}
+
+function getBaseTypeKeyFromLabel(label) {
+  const typeLabels = {
+    '颜色': 'color',
+    '间距': 'spacing',
+    '字体': 'typography',
+    '边框': 'border'
+  }
+  return typeLabels[label] || label
+}
+
+function getSemanticTypeKeyFromLabel(label) {
+  const typeLabels = {
+    '背景': 'background',
+    '文字': 'text',
+    '边框': 'border',
+    '间距': 'spacing',
+    '字体': 'typography'
+  }
+  return typeLabels[label] || label
+}
