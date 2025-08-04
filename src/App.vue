@@ -42,18 +42,14 @@
 
 <script setup>
 import { ref, computed, nextTick } from 'vue'
-import TokenOverview from './components/TokenOverview.vue'
 import TokenList from './components/TokenList.vue'
 import ButtonComponent from './components/ButtonComponent.vue'
 import InputComponent from './components/InputComponent.vue'
-import Instructions from './components/Instructions.vue'
 
-const currentPage = ref('instructions')
+const currentPage = ref('tokens')
 const isNavigating = ref(false)
 
 const navItems = [
-  { id: 'instructions', name: '使用说明' },
-  { id: 'overview', name: 'Design Token概述' },
   { id: 'tokens', name: '全量Token' },
   { id: 'button', name: 'Button' },
   { id: 'input', name: 'Input' }
@@ -61,8 +57,6 @@ const navItems = [
 
 const currentComponent = computed(() => {
   const components = {
-    instructions: Instructions,
-    overview: TokenOverview,
     tokens: TokenList,
     button: ButtonComponent,
     input: InputComponent
