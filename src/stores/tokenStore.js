@@ -48,7 +48,39 @@ export const baseTokens = reactive({
   border: {
     'border-radius-sm': { value: '1px', type: 'border', usage: '基础小圆角值' },
     'border-radius-md': { value: '4px', type: 'border', usage: '基础中等圆角值' },
-    'border-radius-lg': { value: '8px', type: 'border', usage: '基础大圆角值' }
+    'border-radius-lg': { value: '8px', type: 'border', usage: '基础大圆角值' },
+    'border-width-thin': { value: '1px', type: 'border', usage: '基础细边框宽度值' },
+    'border-width-medium': { value: '2px', type: 'border', usage: '基础中等边框宽度值' },
+    'border-width-thick': { value: '4px', type: 'border', usage: '基础粗边框宽度值' }
+  },
+  shadow: {
+    'shadow-sm': { value: '0 1px 2px 0 rgba(0, 0, 0, 0.05)', type: 'shadow', usage: '基础小阴影值' },
+    'shadow-md': { value: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', type: 'shadow', usage: '基础中等阴影值' },
+    'shadow-lg': { value: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', type: 'shadow', usage: '基础大阴影值' },
+    'shadow-xl': { value: '0 20px 25px -5px rgba(0, 0, 0, 0.1)', type: 'shadow', usage: '基础超大阴影值' }
+  },
+  animation: {
+    'duration-fast': { value: '150ms', type: 'animation', usage: '基础快速动画时长值' },
+    'duration-normal': { value: '300ms', type: 'animation', usage: '基础标准动画时长值' },
+    'duration-slow': { value: '500ms', type: 'animation', usage: '基础慢速动画时长值' },
+    'easing-linear': { value: 'linear', type: 'animation', usage: '基础线性缓动函数值' },
+    'easing-ease-in': { value: 'ease-in', type: 'animation', usage: '基础渐入缓动函数值' },
+    'easing-ease-out': { value: 'ease-out', type: 'animation', usage: '基础渐出缓动函数值' },
+    'easing-ease-in-out': { value: 'ease-in-out', type: 'animation', usage: '基础渐入渐出缓动函数值' }
+  },
+  sizing: {
+    'size-xs': { value: '24px', type: 'sizing', usage: '基础超小尺寸值' },
+    'size-sm': { value: '32px', type: 'sizing', usage: '基础小尺寸值' },
+    'size-md': { value: '40px', type: 'sizing', usage: '基础中等尺寸值' },
+    'size-lg': { value: '48px', type: 'sizing', usage: '基础大尺寸值' },
+    'size-xl': { value: '56px', type: 'sizing', usage: '基础超大尺寸值' }
+  },
+  opacity: {
+    'opacity-0': { value: '0', type: 'opacity', usage: '基础完全透明值' },
+    'opacity-25': { value: '0.25', type: 'opacity', usage: '基础25%透明度值' },
+    'opacity-50': { value: '0.5', type: 'opacity', usage: '基础50%透明度值' },
+    'opacity-75': { value: '0.75', type: 'opacity', usage: '基础75%透明度值' },
+    'opacity-100': { value: '1', type: 'opacity', usage: '基础完全不透明值' }
   }
 })
 
@@ -322,6 +354,130 @@ export const semanticTokens = reactive({
       usage: '明显的圆角效果',
       baseToken: 'border.border-radius-lg'
     }
+  },
+
+  // 阴影语义（Shadow）
+  shadow: {
+    'subtle-shadow': { 
+      value: 'shadow-sm', 
+      type: 'shadow', 
+      usage: '细微的阴影效果',
+      baseToken: 'shadow.shadow-sm'
+    },
+    'moderate-shadow': { 
+      value: 'shadow-md', 
+      type: 'shadow', 
+      usage: '适中的阴影效果',
+      baseToken: 'shadow.shadow-md'
+    },
+    'prominent-shadow': { 
+      value: 'shadow-lg', 
+      type: 'shadow', 
+      usage: '显著的阴影效果',
+      baseToken: 'shadow.shadow-lg'
+    },
+    'elevated-shadow': { 
+      value: 'shadow-xl', 
+      type: 'shadow', 
+      usage: '高层级的阴影效果',
+      baseToken: 'shadow.shadow-xl'
+    }
+  },
+
+  // 动画语义（Animation）
+  animation: {
+    'quick-transition': { 
+      value: 'duration-fast', 
+      type: 'animation', 
+      usage: '快速的过渡动画',
+      baseToken: 'animation.duration-fast'
+    },
+    'standard-transition': { 
+      value: 'duration-normal', 
+      type: 'animation', 
+      usage: '标准的过渡动画',
+      baseToken: 'animation.duration-normal'
+    },
+    'smooth-transition': { 
+      value: 'duration-slow', 
+      type: 'animation', 
+      usage: '平滑的过渡动画',
+      baseToken: 'animation.duration-slow'
+    },
+    'standard-easing': { 
+      value: 'easing-ease-in-out', 
+      type: 'animation', 
+      usage: '标准的缓动函数',
+      baseToken: 'animation.easing-ease-in-out'
+    }
+  },
+
+  // 尺寸语义（Sizing）
+  sizing: {
+    'compact-size': { 
+      value: 'size-xs', 
+      type: 'sizing', 
+      usage: '紧凑的元素尺寸',
+      baseToken: 'sizing.size-xs'
+    },
+    'small-size': { 
+      value: 'size-sm', 
+      type: 'sizing', 
+      usage: '小型的元素尺寸',
+      baseToken: 'sizing.size-sm'
+    },
+    'medium-size': { 
+      value: 'size-md', 
+      type: 'sizing', 
+      usage: '中等的元素尺寸',
+      baseToken: 'sizing.size-md'
+    },
+    'large-size': { 
+      value: 'size-lg', 
+      type: 'sizing', 
+      usage: '大型的元素尺寸',
+      baseToken: 'sizing.size-lg'
+    },
+    'extra-large-size': { 
+      value: 'size-xl', 
+      type: 'sizing', 
+      usage: '超大的元素尺寸',
+      baseToken: 'sizing.size-xl'
+    }
+  },
+
+  // 透明度语义（Opacity）
+  opacity: {
+    'transparent': { 
+      value: 'opacity-0', 
+      type: 'opacity', 
+      usage: '完全透明效果',
+      baseToken: 'opacity.opacity-0'
+    },
+    'subtle-opacity': { 
+      value: 'opacity-25', 
+      type: 'opacity', 
+      usage: '细微的透明效果',
+      baseToken: 'opacity.opacity-25'
+    },
+    'moderate-opacity': { 
+      value: 'opacity-50', 
+      type: 'opacity', 
+      usage: '适中的透明效果',
+      baseToken: 'opacity.opacity-50'
+    },
+    'prominent-opacity': { 
+      value: 'opacity-75', 
+      type: 'opacity', 
+      usage: '显著的透明效果',
+      baseToken: 'opacity.opacity-75'
+    },
+    'opaque': { 
+      value: 'opacity-100', 
+      type: 'opacity', 
+      usage: '完全不透明效果',
+      baseToken: 'opacity.opacity-100'
+    }
   }
 })
 
@@ -338,7 +494,9 @@ export const componentTokens = reactive({
         borderRadius: { semanticToken: 'radius.moderate-radius' },
         padding: { semanticToken: 'spacing.cozy-spacing' },
         fontSize: { semanticToken: 'typography.body-text-size' },
-        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' },
+        boxShadow: { semanticToken: 'shadow.subtle-shadow' },
+        transition: { semanticToken: 'animation.quick-transition' }
       }
     },
     'button-primary-hover': {
@@ -350,7 +508,9 @@ export const componentTokens = reactive({
         borderRadius: { semanticToken: 'radius.moderate-radius' },
         padding: { semanticToken: 'spacing.cozy-spacing' },
         fontSize: { semanticToken: 'typography.body-text-size' },
-        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' },
+        boxShadow: { semanticToken: 'shadow.subtle-shadow' },
+        transition: { semanticToken: 'animation.quick-transition' }
       }
     },
     'button-primary-active': {
@@ -362,7 +522,9 @@ export const componentTokens = reactive({
         borderRadius: { semanticToken: 'radius.moderate-radius' },
         padding: { semanticToken: 'spacing.cozy-spacing' },
         fontSize: { semanticToken: 'typography.body-text-size' },
-        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' },
+        boxShadow: { semanticToken: 'shadow.subtle-shadow' },
+        transition: { semanticToken: 'animation.quick-transition' }
       }
     },
     'button-primary-disabled': {
@@ -374,7 +536,9 @@ export const componentTokens = reactive({
         borderRadius: { semanticToken: 'radius.moderate-radius' },
         padding: { semanticToken: 'spacing.cozy-spacing' },
         fontSize: { semanticToken: 'typography.body-text-size' },
-        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' },
+        boxShadow: { semanticToken: 'shadow.subtle-shadow' },
+        transition: { semanticToken: 'animation.quick-transition' }
       }
     },
 
@@ -389,7 +553,9 @@ export const componentTokens = reactive({
         borderRadius: { semanticToken: 'radius.moderate-radius' },
         padding: { semanticToken: 'spacing.cozy-spacing' },
         fontSize: { semanticToken: 'typography.body-text-size' },
-        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' },
+        boxShadow: { semanticToken: 'shadow.subtle-shadow' },
+        transition: { semanticToken: 'animation.quick-transition' }
       }
     },
     'button-secondary-hover': {
@@ -402,7 +568,9 @@ export const componentTokens = reactive({
         borderRadius: { semanticToken: 'radius.moderate-radius' },
         padding: { semanticToken: 'spacing.cozy-spacing' },
         fontSize: { semanticToken: 'typography.body-text-size' },
-        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' },
+        boxShadow: { semanticToken: 'shadow.subtle-shadow' },
+        transition: { semanticToken: 'animation.quick-transition' }
       }
     },
     'button-secondary-active': {
@@ -415,7 +583,9 @@ export const componentTokens = reactive({
         borderRadius: { semanticToken: 'radius.moderate-radius' },
         padding: { semanticToken: 'spacing.cozy-spacing' },
         fontSize: { semanticToken: 'typography.body-text-size' },
-        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' },
+        boxShadow: { semanticToken: 'shadow.subtle-shadow' },
+        transition: { semanticToken: 'animation.quick-transition' }
       }
     },
     'button-secondary-disabled': {
@@ -428,7 +598,9 @@ export const componentTokens = reactive({
         borderRadius: { semanticToken: 'radius.moderate-radius' },
         padding: { semanticToken: 'spacing.cozy-spacing' },
         fontSize: { semanticToken: 'typography.body-text-size' },
-        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' },
+        boxShadow: { semanticToken: 'shadow.subtle-shadow' },
+        transition: { semanticToken: 'animation.quick-transition' }
       }
     },
 
@@ -473,7 +645,9 @@ export const componentTokens = reactive({
         placeholder: { semanticToken: 'text.muted-text' },
         borderRadius: { semanticToken: 'radius.moderate-radius' },
         padding: { semanticToken: 'spacing.cozy-spacing' },
-        fontSize: { semanticToken: 'typography.body-text-size' }
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        transition: { semanticToken: 'animation.quick-transition' },
+        boxShadow: { semanticToken: 'shadow.subtle-shadow' }
       }
     },
     'input-standard-focus': {
@@ -486,7 +660,9 @@ export const componentTokens = reactive({
         placeholder: { semanticToken: 'text.muted-text' },
         borderRadius: { semanticToken: 'radius.moderate-radius' },
         padding: { semanticToken: 'spacing.cozy-spacing' },
-        fontSize: { semanticToken: 'typography.body-text-size' }
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        transition: { semanticToken: 'animation.quick-transition' },
+        boxShadow: { semanticToken: 'shadow.subtle-shadow' }
       }
     },
     'input-standard-disabled': {
@@ -499,7 +675,9 @@ export const componentTokens = reactive({
         placeholder: { semanticToken: 'text.disabled-text' },
         borderRadius: { semanticToken: 'radius.moderate-radius' },
         padding: { semanticToken: 'spacing.cozy-spacing' },
-        fontSize: { semanticToken: 'typography.body-text-size' }
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        transition: { semanticToken: 'animation.quick-transition' },
+        boxShadow: { semanticToken: 'shadow.subtle-shadow' }
       }
     },
     'input-standard-error': {
@@ -512,7 +690,9 @@ export const componentTokens = reactive({
         placeholder: { semanticToken: 'text.muted-text' },
         borderRadius: { semanticToken: 'radius.moderate-radius' },
         padding: { semanticToken: 'spacing.cozy-spacing' },
-        fontSize: { semanticToken: 'typography.body-text-size' }
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        transition: { semanticToken: 'animation.quick-transition' },
+        boxShadow: { semanticToken: 'shadow.subtle-shadow' }
       }
     },
     'input-standard-success': {
@@ -525,7 +705,9 @@ export const componentTokens = reactive({
         placeholder: { semanticToken: 'text.muted-text' },
         borderRadius: { semanticToken: 'radius.moderate-radius' },
         padding: { semanticToken: 'spacing.cozy-spacing' },
-        fontSize: { semanticToken: 'typography.body-text-size' }
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        transition: { semanticToken: 'animation.quick-transition' },
+        boxShadow: { semanticToken: 'shadow.subtle-shadow' }
       }
     },
 
@@ -540,7 +722,9 @@ export const componentTokens = reactive({
         placeholder: { semanticToken: 'text.muted-text' },
         borderRadius: { semanticToken: 'radius.subtle-radius' },
         padding: { semanticToken: 'spacing.compact-spacing' },
-        fontSize: { semanticToken: 'typography.small-text-size' }
+        fontSize: { semanticToken: 'typography.small-text-size' },
+        transition: { semanticToken: 'animation.quick-transition' },
+        boxShadow: { semanticToken: 'shadow.subtle-shadow' }
       }
     },
 
@@ -555,7 +739,9 @@ export const componentTokens = reactive({
         placeholder: { semanticToken: 'text.muted-text' },
         borderRadius: { semanticToken: 'radius.prominent-radius' },
         padding: { semanticToken: 'spacing.comfortable-spacing' },
-        fontSize: { semanticToken: 'typography.heading-text-size' }
+        fontSize: { semanticToken: 'typography.heading-text-size' },
+        transition: { semanticToken: 'animation.quick-transition' },
+        boxShadow: { semanticToken: 'shadow.subtle-shadow' }
       }
     }
   },

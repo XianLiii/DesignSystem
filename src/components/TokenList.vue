@@ -16,12 +16,35 @@
         >
           导入Token文件
         </button>
-        <button 
-          @click="downloadCSV"
-          class="bg-gray-900 text-white px-4 py-2 rounded text-sm hover:bg-gray-800"
-        >
-          下载CSV文件
-        </button>
+        <!-- 下载按钮下拉菜单 -->
+        <div class="relative">
+          <button 
+            @click="showDownloadMenu = !showDownloadMenu"
+            class="bg-gray-900 text-white px-4 py-2 rounded text-sm hover:bg-gray-800 flex items-center gap-2"
+          >
+            下载数据
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          <div 
+            v-if="showDownloadMenu" 
+            class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200"
+          >
+            <button
+              @click="downloadCSV"
+              class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            >
+              下载为 CSV
+            </button>
+            <button
+              @click="downloadExcel"
+              class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            >
+              下载为 Excel
+            </button>
+          </div>
+        </div>
         <button 
           @click="showHistory = !showHistory"
           class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-50"
@@ -41,7 +64,7 @@
     <!-- Token筛选器 -->
     <div class="mb-5">
       <h2 class="text-lg font-bold mb-3">筛选器</h2>
-      <div class="grid grid-cols-2 lg:grid-cols-7 gap-3">
+      <div class="grid grid-cols-2 lg:grid-cols-6 gap-3">
         <!-- 组件筛选 -->
         <select v-model="filters.componentName" class="border border-gray-300 rounded px-2 py-2 text-sm">
           <option value="">全部组件</option>
@@ -78,26 +101,7 @@
           <option v-for="type in uniqueBaseTypes" :key="type" :value="type">{{ getBaseTypeLabel(type) }}</option>
         </select>
         
-        <!-- 组件Token名称筛选 -->
-        <select v-model="filters.componentTokenName" class="border border-gray-300 rounded px-2 py-2 text-sm">
-          <option value="">全部组件Token名称</option>
-          <option v-for="name in uniqueComponentTokenNames" :key="name" :value="name">{{ name }}</option>
-        </select>
-      </div>
-      
-      <!-- 第二行筛选器 -->
-      <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
-        <!-- 语义Token名称筛选 -->
-        <select v-model="filters.semanticTokenName" class="border border-gray-300 rounded px-2 py-2 text-sm">
-          <option value="">全部语义Token名称</option>
-          <option v-for="name in uniqueSemanticTokenNames" :key="name" :value="name">{{ name }}</option>
-        </select>
-        
-        <!-- 基础Token名称筛选 -->
-        <select v-model="filters.baseTokenName" class="border border-gray-300 rounded px-2 py-2 text-sm">
-          <option value="">全部基础Token名称</option>
-          <option v-for="name in uniqueBaseTokenNames" :key="name" :value="name">{{ name }}</option>
-        </select>
+
         
         <!-- 搜索框保留 -->
         <input 
@@ -274,7 +278,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { 
   getAllTokens, 
   updateTokenValue, 
@@ -284,6 +288,7 @@ import {
   importTokensFromCSV
 } from '../stores/tokenStore'
 import TokenStats from './TokenStats.vue'
+import * as XLSX from 'xlsx'
 
 // 响应式数据
 const searchTerm = ref('')
@@ -293,6 +298,7 @@ const validationError = ref('')
 const showHistory = ref(false)
 const showRevertTip = ref(false)
 const revertTipMessage = ref('')
+const showDownloadMenu = ref(false)
 
 // 筛选器状态
 const filters = ref({
@@ -301,10 +307,7 @@ const filters = ref({
   baseType: '',
   semanticType: '',
   componentState: '',
-  componentToken: '',
-  componentTokenName: '',
-  semanticTokenName: '',
-  baseTokenName: ''
+  componentToken: ''
 })
 
 // 使用computed确保数据响应式更新
@@ -348,29 +351,7 @@ const filteredTokens = computed(() => {
     filtered = filtered.filter(token => token.componentToken === filters.value.componentToken)
   }
 
-  // 组件Token名称筛选
-  if (filters.value.componentTokenName) {
-    filtered = filtered.filter(token => {
-      const componentTokenName = token.componentToken ? token.componentToken.split('.')[1] : ''
-      return componentTokenName === filters.value.componentTokenName
-    })
-  }
 
-  // 语义Token名称筛选
-  if (filters.value.semanticTokenName) {
-    filtered = filtered.filter(token => {
-      const semanticTokenName = token.semanticToken ? token.semanticToken.split('.')[1] : ''
-      return semanticTokenName === filters.value.semanticTokenName
-    })
-  }
-
-  // 基础Token名称筛选
-  if (filters.value.baseTokenName) {
-    filtered = filtered.filter(token => {
-      const baseTokenName = token.baseToken ? token.baseToken.split('.')[1] : ''
-      return baseTokenName === filters.value.baseTokenName
-    })
-  }
 
   // 搜索筛选
   if (searchTerm.value) {
@@ -455,19 +436,7 @@ const getFilteredData = (excludeFields = []) => {
       checks.push(token.semanticType === filters.value.semanticType)
     }
     
-    // Token名称筛选支持
-    if (!excludeFields.includes('componentTokenName') && filters.value.componentTokenName) {
-      const componentTokenName = token.componentToken ? token.componentToken.split('.')[1] : ''
-      checks.push(componentTokenName === filters.value.componentTokenName)
-    }
-    if (!excludeFields.includes('semanticTokenName') && filters.value.semanticTokenName) {
-      const semanticTokenName = token.semanticToken ? token.semanticToken.split('.')[1] : ''
-      checks.push(semanticTokenName === filters.value.semanticTokenName)
-    }
-    if (!excludeFields.includes('baseTokenName') && filters.value.baseTokenName) {
-      const baseTokenName = token.baseToken ? token.baseToken.split('.')[1] : ''
-      checks.push(baseTokenName === filters.value.baseTokenName)
-    }
+
     
     return checks.every(check => check)
   })
@@ -540,39 +509,7 @@ const uniqueBaseTokens = computed(() => {
   return Array.from(tokens).sort()
 })
 
-// Token名称筛选器选项 - 显示全部Token名称
-const uniqueComponentTokenNames = computed(() => {
-  const names = new Set()
-  allTokens.value.forEach(token => {
-    if (token.componentToken) {
-      const name = token.componentToken.split('.')[1]
-      if (name) names.add(name)
-    }
-  })
-  return Array.from(names).sort()
-})
 
-const uniqueSemanticTokenNames = computed(() => {
-  const names = new Set()
-  allTokens.value.forEach(token => {
-    if (token.semanticToken) {
-      const name = token.semanticToken.split('.')[1]
-      if (name) names.add(name)
-    }
-  })
-  return Array.from(names).sort()
-})
-
-const uniqueBaseTokenNames = computed(() => {
-  const names = new Set()
-  allTokens.value.forEach(token => {
-    if (token.baseToken) {
-      const name = token.baseToken.split('.')[1]
-      if (name) names.add(name)
-    }
-  })
-  return Array.from(names).sort()
-})
 
 // 添加缺失的uniqueComponentTokens计算属性
 const uniqueComponentTokens = computed(() => {
@@ -591,10 +528,14 @@ const isEditable = (token) => {
 
 const getValidationTip = (type) => {
   const tips = {
-    color: '颜色值格式：#RRGGBB 或 rgb(r,g,b)',
+    color: '颜色值格式：#RRGGBB、rgb(r,g,b) 或 rgba(r,g,b,a)',
     spacing: '间距值格式：数字+px/rem/em',
     typography: '字体大小格式：数字+px/rem/em',
-    border: '边框值格式：数字+px'
+    border: '边框值格式：数字+px',
+    shadow: '阴影格式：x y blur spread rgba(r,g,b,a)',
+    animation: '动画格式：时间值(300ms)或缓动函数',
+    sizing: '尺寸格式：数字+px/rem/em/%',
+    opacity: '透明度格式：0到1之间的数字'
   }
   return tips[type] || '点击编辑'
 }
@@ -616,22 +557,41 @@ const validateValue = (value, type) => {
   
   switch (type) {
     case 'color':
-      const colorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$|^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$/
+      const colorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$|^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$|^rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*[\d.]+\s*\)$/
       if (!colorRegex.test(value)) {
-        return '颜色格式不正确，请使用 #RRGGBB 或 rgb(r,g,b) 格式'
+        return '颜色格式不正确，请使用 #RRGGBB、rgb(r,g,b) 或 rgba(r,g,b,a) 格式'
       }
       break
     case 'spacing':
     case 'typography':
-      const sizeRegex = /^\d+(\.\d+)?(px|rem|em)$/
+    case 'sizing':
+      const sizeRegex = /^\d+(\.\d+)?(px|rem|em|%)$/
       if (!sizeRegex.test(value)) {
-        return '尺寸格式不正确，请使用数字+px/rem/em格式'
+        return '尺寸格式不正确，请使用数字+px/rem/em/%格式'
       }
       break
     case 'border':
       const borderRegex = /^\d+(\.\d+)?px$/
       if (!borderRegex.test(value)) {
         return '边框格式不正确，请使用数字+px格式'
+      }
+      break
+    case 'shadow':
+      // 简单验证阴影格式
+      if (!value.includes('px') || !value.includes('rgba')) {
+        return '阴影格式不正确，请使用标准的box-shadow格式'
+      }
+      break
+    case 'animation':
+      const animationRegex = /^\d+(\.\d+)?(ms|s)$|^(linear|ease|ease-in|ease-out|ease-in-out)$/
+      if (!animationRegex.test(value)) {
+        return '动画格式不正确，请使用时间值(如300ms)或缓动函数'
+      }
+      break
+    case 'opacity':
+      const opacityValue = parseFloat(value)
+      if (isNaN(opacityValue) || opacityValue < 0 || opacityValue > 1) {
+        return '透明度格式不正确，请使用0到1之间的数字'
       }
       break
   }
@@ -701,7 +661,11 @@ const getBaseTypeLabel = (type) => {
     'color': '颜色',
     'spacing': '间距',
     'typography': '字体',
-    'border': '边框'
+    'border': '边框',
+    'shadow': '阴影',
+    'animation': '动画',
+    'sizing': '尺寸',
+    'opacity': '透明度'
   }
   return typeLabels[type] || type
 }
@@ -712,7 +676,11 @@ const getSemanticTypeLabel = (type) => {
     'text': '文字色',
     'border': '边框色',
     'spacing': '空间距',
-    'typography': '字体样'
+    'typography': '字体样',
+    'shadow': '阴影效',
+    'animation': '动画效',
+    'sizing': '尺寸值',
+    'opacity': '透明度'
   }
   return typeLabels[type] || type
 }
@@ -879,8 +847,6 @@ const getVariantLabel = (variant) => {
   return variantLabels[variant] || variant
 }
 
-import { read, utils } from 'xlsx'
-
 // Token文件导入功能
 const handleFileImport = async (event) => {
   const file = event.target.files[0]
@@ -927,10 +893,10 @@ const handleFileImport = async (event) => {
         const reader = new FileReader()
         reader.onload = (e) => {
           try {
-            const workbook = read(e.target.result, { type: 'array' })
+            const workbook = XLSX.read(e.target.result, { type: 'array' })
             const firstSheetName = workbook.SheetNames[0]
             const worksheet = workbook.Sheets[firstSheetName]
-            const jsonData = utils.sheet_to_json(worksheet, { header: 1 })
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
             resolve(jsonData)
           } catch (error) {
             reject(error)
@@ -1019,6 +985,7 @@ const handleFileImport = async (event) => {
 }
 
 const downloadCSV = () => {
+  showDownloadMenu.value = false
   const headers = [
     '组件', '变体', '状态', '组件Token', '组件用途', '语义类型', 
     '语义Token', '语义用途', '基础类型', '基础Token', '基础值', '基础用途'
@@ -1050,7 +1017,70 @@ const downloadCSV = () => {
   link.click()
 }
 
+const downloadExcel = async () => {
+  showDownloadMenu.value = false
+  
+  // 准备数据
+  const headers = [
+    '组件', '变体', '状态', '组件Token', '组件用途', '语义类型', 
+    '语义Token', '语义用途', '基础类型', '基础Token', '基础值', '基础用途'
+  ]
+  
+  const data = filteredTokens.value.map(token => ({
+    '组件': token.componentName || '',
+    '变体': token.variant || '',
+    '状态': token.componentState || '不可交互',
+    '组件Token': token.componentToken || '',
+    '组件用途': token.componentUsage || '',
+    '语义类型': token.semanticType || '',
+    '语义Token': token.semanticToken || '',
+    '语义用途': token.semanticUsage || '',
+    '基础类型': token.baseType || '',
+    '基础Token': token.baseToken || '',
+    '基础值': token.baseValue || '',
+    '基础用途': token.baseUsage || ''
+  }))
+  
+  // 创建工作簿
+  const ws = XLSX.utils.json_to_sheet(data)
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Design Tokens')
+  
+  // 设置列宽
+  const colWidths = [
+    { wch: 10 }, // 组件
+    { wch: 10 }, // 变体
+    { wch: 10 }, // 状态
+    { wch: 30 }, // 组件Token
+    { wch: 20 }, // 组件用途
+    { wch: 12 }, // 语义类型
+    { wch: 25 }, // 语义Token
+    { wch: 20 }, // 语义用途
+    { wch: 12 }, // 基础类型
+    { wch: 20 }, // 基础Token
+    { wch: 15 }, // 基础值
+    { wch: 20 }  // 基础用途
+  ]
+  ws['!cols'] = colWidths
+  
+  // 下载文件
+  XLSX.writeFile(wb, 'design-tokens.xlsx')
+}
+
+// 点击外部关闭下拉菜单
+const handleClickOutside = (event) => {
+  const downloadMenuBtn = event.target.closest('.relative')
+  if (!downloadMenuBtn || !downloadMenuBtn.contains(event.target)) {
+    showDownloadMenu.value = false
+  }
+}
+
 onMounted(() => {
   // 组件已挂载，computed会自动计算数据
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
 })
 </script> 
