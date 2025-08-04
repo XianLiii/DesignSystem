@@ -10,7 +10,7 @@
     />
     
     <!-- 可交互的组件示例 -->
-    <section class="mb-12">
+    <section v-if="inputTokens.length > 0" class="mb-12">
       <h2 class="text-xl font-bold mb-6">可交互组件示例</h2>
       <div class="space-y-6">
         <!-- Default Input -->
@@ -65,7 +65,7 @@
     </section>
 
     <!-- 静态样式展示 -->
-    <section class="mb-12">
+    <section v-if="inputTokens.length > 0" class="mb-12">
       <h2 class="text-xl font-bold mb-6">交互状态样式展示</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <!-- Input 状态 -->
@@ -170,20 +170,21 @@ const defaultValue = ref('')
 const errorValue = ref('')
 const successValue = ref('')
 const inputDisabled = ref(false)
-const inputTokens = ref([])
+// Input Token数据 - 响应式计算
+const inputTokens = computed(() => {
+  const tokens = getComponentTokens('input')
+  return tokens.length > 0 ? tokens : []
+})
 
 // Input Token统计
 const inputTokenStats = computed(() => {
-  // 获取Input组件的所有Token数据
-  const inputTokenData = getComponentTokens('input')
-  
   // 使用与全局统计相同的逻辑
   const uniqueBaseTokenNames = new Set()
   const uniqueSemanticTokenNames = new Set()
   const uniqueComponentTokenNames = new Set()
   const variants = new Set()
   
-  inputTokenData.forEach(token => {
+  inputTokens.value.forEach(token => {
     // 基础Token名称：只要名称不一样就算一个
     if (token.baseToken) {
       uniqueBaseTokenNames.add(token.baseToken)
@@ -206,7 +207,7 @@ const inputTokenStats = computed(() => {
   })
 
   return {
-    componentCount: 1, // Input组件页面只有一个组件
+    componentCount: inputTokens.value.length > 0 ? 1 : 0, // 只有有Token数据时才显示组件计数
     baseTokenCount: uniqueBaseTokenNames.size,
     semanticTokenCount: uniqueSemanticTokenNames.size,
     componentTokenCount: uniqueComponentTokenNames.size,
@@ -214,7 +215,5 @@ const inputTokenStats = computed(() => {
   }
 })
 
-onMounted(() => {
-  inputTokens.value = getComponentTokens('input')
-})
+// 移除onMounted，因为现在使用computed属性
 </script> 

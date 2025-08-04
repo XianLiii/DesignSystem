@@ -4,17 +4,17 @@
       <h1 class="text-3xl font-bold">全量Token</h1>
       <div class="flex space-x-3">
         <input
-          ref="csvFileInput"
+          ref="fileInput"
           type="file"
-          accept=".csv"
-          @change="handleCSVImport"
+          accept=".xlsx,.xls,.csv"
+          @change="handleFileImport"
           class="hidden"
         />
         <button 
-          @click="$refs.csvFileInput.click()"
+          @click="$refs.fileInput.click()"
           class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700"
         >
-          导入CSV文件
+          导入Token文件
         </button>
         <button 
           @click="downloadCSV"
@@ -879,41 +879,132 @@ const getVariantLabel = (variant) => {
   return variantLabels[variant] || variant
 }
 
-// CSV导入功能
-const handleCSVImport = async (event) => {
+import { read, utils } from 'xlsx'
+
+// Token文件导入功能
+const handleFileImport = async (event) => {
   const file = event.target.files[0]
   if (!file) return
 
-  const text = await file.text()
-  const lines = text.split('\n')
-  
-  if (lines.length < 2) {
-    alert('CSV文件格式不正确')
-    return
-  }
-
   try {
-    // 解析CSV数据
-    const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim())
-    const data = []
-    
-    for (let i = 1; i < lines.length; i++) {
-      if (lines[i].trim()) {
-        const row = lines[i].split(',').map(cell => cell.replace(/"/g, '').trim())
-        if (row.length === headers.length) {
-          const rowData = {}
-          headers.forEach((header, index) => {
-            rowData[header] = row[index]
-          })
-          data.push(rowData)
+    const expectedHeaders = ['组件', '变体', '状态', '组件Token', '组件用途', '语义类型', '语义Token', '语义用途', '基础类型', '基础Token', '基础值', '基础用途']
+    let data = []
+
+    // 根据文件类型选择不同的解析方法
+    if (file.name.endsWith('.csv')) {
+      // 读取CSV文件
+      const text = await new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = (e) => resolve(e.target.result)
+        reader.onerror = (e) => reject(e)
+        reader.readAsText(file, 'UTF-8')
+      })
+      
+      // 处理BOM标记
+      const cleanText = text.replace(/^\uFEFF/, '')
+      const lines = cleanText.split('\n')
+      
+      if (lines.length < 2) {
+        alert('CSV文件格式不正确或为空')
+        return
+      }
+
+      // 解析CSV数据
+      const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim())
+      data = [headers]
+      
+      for (let i = 1; i < lines.length; i++) {
+        if (lines[i].trim()) {
+          const row = lines[i].split(',').map(cell => cell.replace(/"/g, '').trim())
+          if (row.length === headers.length) {
+            data.push(row)
+          }
         }
       }
+    } else {
+      // 读取Excel文件
+      data = await new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          try {
+            const workbook = read(e.target.result, { type: 'array' })
+            const firstSheetName = workbook.SheetNames[0]
+            const worksheet = workbook.Sheets[firstSheetName]
+            const jsonData = utils.sheet_to_json(worksheet, { header: 1 })
+            resolve(jsonData)
+          } catch (error) {
+            reject(error)
+          }
+        }
+        reader.onerror = (e) => reject(e)
+        reader.readAsArrayBuffer(file)
+      })
     }
+
+    if (!data || data.length < 2) {
+      alert('文件格式不正确或为空')
+      return
+    }
+
+    const headers = data[0]
+    console.log('期望的表头：', expectedHeaders)
+    console.log('实际的表头：', headers)
+
+    // 检查表头是否匹配预期
+    const isHeaderValid = headers.length === expectedHeaders.length &&
+      headers.every((header, index) => {
+        const cleanHeader = String(header).trim()
+          .replace(/[\uFEFF\u200B]/g, '') // 移除BOM和零宽空格
+          .replace(/[^\u4e00-\u9fa5a-zA-Z]/g, '') // 只保留中文和英文字符
+        const expectedHeader = expectedHeaders[index]
+        console.log(`检查表头 ${index}:`, {
+          actual: cleanHeader,
+          expected: expectedHeader,
+          matches: cleanHeader === expectedHeader
+        })
+        return cleanHeader === expectedHeader
+      })
+
+    if (!isHeaderValid) {
+      alert('文件表头格式不正确，请确保表头为：\n' + expectedHeaders.join('，'))
+      return
+    }
+
+    // 转换数据格式
+    const formattedData = data.slice(1).map((row, rowIndex) => {
+      if (row.length === headers.length) {
+        const rowData = {}
+        expectedHeaders.forEach((header, index) => {
+          rowData[header] = String(row[index] || '').trim()
+        })
+        console.log(`第 ${rowIndex + 1} 行数据：`, rowData)
+        return rowData
+      } else {
+        console.warn(`第 ${rowIndex + 1} 行数据列数不匹配：`, {
+          expected: headers.length,
+          actual: row.length,
+          row: row
+        })
+        return null
+      }
+    }).filter(row => row !== null)
 
     // 调用store中的函数来更新Token数据
     try {
-      await importTokensFromCSV(data)
-      alert(`🎉 成功导入 ${data.length} 条Token数据并重建关联关系！`)
+      const importResult = await importTokensFromCSV(formattedData)
+      
+      // 不需要手动更新计算属性，它会自动响应底层数据的变化
+      
+      // 显示导入结果
+      const fileType = file.name.endsWith('.csv') ? 'CSV' : 'Excel'
+      alert(`🎉 ${fileType}文件解析结果：\n总行数: ${importResult.totalRows}\n基础Token: ${importResult.baseTokenCount}\n语义Token: ${importResult.semanticTokenCount}\n组件Token: ${importResult.componentTokenCount}\n\n如果数量为0，请检查文件格式是否符合要求：\n1. 列名是否正确（组件、变体、状态等）\n2. Token名称格式是否正确（category.name）\n3. 必填字段是否完整`)
+      
+      // 重置筛选器
+      Object.keys(filters.value).forEach(key => {
+        filters.value[key] = ''
+      })
+      searchTerm.value = ''
+      
     } catch (error) {
       alert('导入Token数据失败：' + error.message)
     }
@@ -922,7 +1013,8 @@ const handleCSVImport = async (event) => {
     event.target.value = ''
     
   } catch (error) {
-    alert('CSV文件解析失败：' + error.message)
+    const fileType = file.name.endsWith('.csv') ? 'CSV' : 'Excel'
+    alert(`${fileType}文件解析失败：` + error.message)
   }
 }
 
@@ -932,21 +1024,22 @@ const downloadCSV = () => {
     '语义Token', '语义用途', '基础类型', '基础Token', '基础值', '基础用途'
   ]
   
+  // 使用原始值而不是标签值
   const csvContent = [
     headers.join(','),
     ...filteredTokens.value.map(token => [
-      getComponentNameLabel(token.componentName) || '',
-      getVariantLabel(token.variant) || '',
-      token.componentState ? getStateLabel(token.componentState) : '不可交互',
+      token.componentName || '',
+      token.variant || '',
+      token.componentState || '不可交互',
       token.componentToken || '',
-      getComponentUsageLabel(token.componentUsage) || '',
-      getSemanticTypeLabel(token.semanticType) || '',
+      token.componentUsage || '',
+      token.semanticType || '',
       token.semanticToken || '',
-      getSemanticUsageLabel(token.semanticUsage) || '',
-      getBaseTypeLabel(token.baseType) || '',
+      token.semanticUsage || '',
+      token.baseType || '',
       token.baseToken || '',
       token.baseValue || '',
-      getBaseUsageLabel(token.baseUsage) || ''
+      token.baseUsage || ''
     ].map(cell => `"${cell}"`).join(','))
   ].join('\n')
   

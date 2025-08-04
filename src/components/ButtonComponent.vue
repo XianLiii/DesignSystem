@@ -10,7 +10,7 @@
     />
     
     <!-- 可交互的组件示例 -->
-    <section class="mb-12">
+    <section v-if="buttonTokens.length > 0" class="mb-12">
       <h2 class="text-xl font-bold mb-6">可交互组件示例</h2>
       <div class="space-y-6">
         <!-- Primary Button -->
@@ -58,7 +58,7 @@
     </section>
 
     <!-- 静态样式展示 -->
-    <section class="mb-12">
+    <section v-if="buttonTokens.length > 0" class="mb-12">
       <h2 class="text-xl font-bold mb-6">交互状态样式展示</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <!-- Primary Button 状态 -->
@@ -127,20 +127,21 @@ const primaryText = ref('Primary Button')
 const secondaryText = ref('Secondary Button')
 const primaryDisabled = ref(false)
 const secondaryDisabled = ref(false)
-const buttonTokens = ref([])
+// Button Token数据 - 响应式计算
+const buttonTokens = computed(() => {
+  const tokens = getComponentTokens('button')
+  return tokens.length > 0 ? tokens : []
+})
 
 // Button Token统计
 const buttonTokenStats = computed(() => {
-  // 获取Button组件的所有Token数据
-  const buttonTokenData = getComponentTokens('button')
-  
   // 使用与全局统计相同的逻辑
   const uniqueBaseTokenNames = new Set()
   const uniqueSemanticTokenNames = new Set()
   const uniqueComponentTokenNames = new Set()
   const variants = new Set()
   
-  buttonTokenData.forEach(token => {
+  buttonTokens.value.forEach(token => {
     // 基础Token名称：只要名称不一样就算一个
     if (token.baseToken) {
       uniqueBaseTokenNames.add(token.baseToken)
@@ -163,7 +164,7 @@ const buttonTokenStats = computed(() => {
   })
 
   return {
-    componentCount: 1, // Button组件页面只有一个组件
+    componentCount: buttonTokens.value.length > 0 ? 1 : 0, // 只有有Token数据时才显示组件计数
     baseTokenCount: uniqueBaseTokenNames.size,
     semanticTokenCount: uniqueSemanticTokenNames.size,
     componentTokenCount: uniqueComponentTokenNames.size,
@@ -179,7 +180,5 @@ const handleSecondaryClick = () => {
   alert('Secondary Button clicked!')
 }
 
-onMounted(() => {
-  buttonTokens.value = getComponentTokens('button')
-})
+// 移除onMounted，因为现在使用computed属性
 </script> 

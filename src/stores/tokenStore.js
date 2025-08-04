@@ -938,7 +938,7 @@ export function revertHistoryRecord(index) {
   return false
 }
 
-// CSV导入功能 - 兼容新架构
+// CSV导入功能 - 支持新的组件Token结构
 export async function importTokensFromCSV(csvData) {
   // 清空现有Token
   Object.keys(baseTokens).forEach(category => {
@@ -962,10 +962,36 @@ export async function importTokensFromCSV(csvData) {
   const componentTokensMap = new Map()
 
   // 第一遍：收集所有唯一的Token
-  csvData.forEach(row => {
-    const componentName = getComponentKeyFromLabel(row['组件'] || row['componentName'])
-    const variantName = getVariantKeyFromLabel(row['变体'] || row['variant'])
-    const stateName = getStateKeyFromLabel(row['状态'] || row['componentState'])
+  console.log('开始处理CSV数据，总行数：', csvData.length)
+  csvData.forEach((row, index) => {
+    console.log(`处理第 ${index + 1} 行:`, row)
+    
+    // 从CSV数据中提取字段
+    const componentField = row['组件'] || row['componentName'] || row['Component'] || row['component']
+    const variantField = row['变体'] || row['variant'] || row['Variant'] || row['variant']
+    const stateField = row['状态'] || row['componentState'] || row['State'] || row['state']
+    const tokenField = row['组件Token'] || row['componentToken'] || row['Component Token'] || row['component_token']
+
+    console.log('原始字段值：', {
+      componentField,
+      variantField,
+      stateField,
+      tokenField,
+      row
+    })
+
+    // 转换字段值
+    const componentName = getComponentKeyFromLabel(componentField)
+    const variantName = getVariantKeyFromLabel(variantField)
+    const stateName = getStateKeyFromLabel(stateField)
+    const styleProp = tokenField?.split('.')?.pop() || 'default'
+
+    console.log('解析后的值：', {
+      componentName,
+      variantName,
+      stateName,
+      styleProp
+    })
 
     // 基础Token逻辑
     if (row['基础Token'] || row['baseToken']) {
@@ -973,22 +999,67 @@ export async function importTokensFromCSV(csvData) {
       const baseValue = row['基础值'] || row['baseValue']
       const baseType = getBaseTypeKeyFromLabel(row['基础类型'] || row['baseType'])
       const baseUsage = row['基础用途'] || row['baseUsage']
+      
+      console.log('基础Token数据：', {
+        baseTokenName,
+        baseValue,
+        baseType,
+        baseUsage,
+        row
+      })
 
-      if (baseTokenName && baseValue && baseType) {
-        const [category, name] = baseTokenName.split('.')
-        if (category && name) {
-          const categoryKey = category
-          const tokenKey = name
-          
-          if (!baseTokensMap.has(`${categoryKey}.${tokenKey}`)) {
-            baseTokensMap.set(`${categoryKey}.${tokenKey}`, {
-              value: baseValue,
-              type: baseType,
-              usage: baseUsage || '',
-              category: categoryKey
-            })
-          }
-        }
+      // 检查必要字段
+      if (!baseTokenName || !baseValue || !baseType) {
+        console.log('跳过不完整的基础Token数据', {
+          baseTokenName,
+          baseValue,
+          baseType
+        })
+        return
+      }
+
+      // 检查Token名称格式
+      const [category, name] = baseTokenName.split('.')
+      if (!category || !name) {
+        console.log('基础Token名称格式不正确', baseTokenName)
+        return
+      }
+
+      // 验证基础值格式
+      let isValidValue = true
+      switch (baseType) {
+        case 'color':
+          isValidValue = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$|^rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\)$/.test(baseValue)
+          break
+        case 'spacing':
+        case 'typography':
+          isValidValue = /^\d+(\.\d+)?(px|rem|em)$/.test(baseValue)
+          break
+        case 'border':
+          isValidValue = /^\d+(\.\d+)?px$/.test(baseValue)
+          break
+      }
+
+      if (!isValidValue) {
+        console.log('基础Token值格式不正确', {
+          baseValue,
+          baseType,
+          baseTokenName
+        })
+        return
+      }
+
+      // 创建或更新基础Token
+      const categoryKey = category
+      const tokenKey = name
+      
+      if (!baseTokensMap.has(`${categoryKey}.${tokenKey}`)) {
+        baseTokensMap.set(`${categoryKey}.${tokenKey}`, {
+          value: baseValue,
+          type: baseType,
+          usage: baseUsage || '',
+          category: categoryKey
+        })
       }
     }
 
@@ -998,87 +1069,236 @@ export async function importTokensFromCSV(csvData) {
       const semanticType = getSemanticTypeKeyFromLabel(row['语义类型'] || row['semanticType'])
       const semanticUsage = row['语义用途'] || row['semanticUsage']
       const baseTokenPath = row['基础Token'] || row['baseToken']
+      
+      console.log('语义Token数据：', {
+        semanticTokenName,
+        semanticType,
+        semanticUsage,
+        baseTokenPath,
+        row
+      })
 
-      if (semanticTokenName && semanticType && baseTokenPath) {
-        const [category, name] = semanticTokenName.split('.')
-        if (category && name) {
-          if (!semanticTokensMap.has(semanticTokenName)) {
-            semanticTokensMap.set(semanticTokenName, {
-              value: name,
-              type: semanticType,
-              usage: semanticUsage || '',
-              baseToken: baseTokenPath,
-              category: category
-            })
-          }
-        }
+      // 检查必要字段
+      if (!semanticTokenName || !semanticType || !baseTokenPath) {
+        console.log('跳过不完整的语义Token数据', {
+          semanticTokenName,
+          semanticType,
+          baseTokenPath
+        })
+        return
       }
-    }
 
-    // 组件Token逻辑 - 新的扁平化结构
-    if (componentName && variantName) {
-      let componentTokenKey = variantName
-      
-      // 如果有状态，将状态添加到Token名称中
-      if (stateName && stateName !== '不可交互') {
-        componentTokenKey = `${variantName}-${stateName}`
+      // 检查Token名称格式
+      const [category, name] = semanticTokenName.split('.')
+      if (!category || !name) {
+        console.log('语义Token名称格式不正确', semanticTokenName)
+        return
       }
-      
-      const fullComponentKey = `${componentName}.${componentTokenKey}`
-      const semanticTokenPath = row['语义Token'] || row['semanticToken']
-      
-      if (!componentTokensMap.has(fullComponentKey)) {
-        componentTokensMap.set(fullComponentKey, {
-          type: 'component',
-          usage: row['组件用途'] || row['componentUsage'] || '',
-          semanticToken: semanticTokenPath || ''
+
+      // 检查基础Token引用格式
+      const [baseCategory, baseName] = baseTokenPath.split('.')
+      if (!baseCategory || !baseName) {
+        console.log('基础Token引用格式不正确', baseTokenPath)
+        return
+      }
+
+      // 创建或更新语义Token
+      if (!semanticTokensMap.has(semanticTokenName)) {
+        semanticTokensMap.set(semanticTokenName, {
+          value: name,
+          type: semanticType,
+          usage: semanticUsage || '',
+          baseToken: baseTokenPath,
+          category: category
         })
       }
     }
+
+    // 组件Token逻辑 - 支持新的组件Token结构
+    if (componentName && variantName) {
+      let componentTokenKey = `${componentName}-${variantName}`
+      if (stateName && stateName !== '不可交互') {
+        componentTokenKey = `${componentTokenKey}-${stateName}`
+      }
+      
+      const semanticTokenPath = row['语义Token'] || row['semanticToken']
+      const componentUsage = row['组件用途'] || row['componentUsage'] || ''
+      const componentTokenPath = row['组件Token'] || row['componentToken']
+      const styleProp = componentTokenPath?.split('.')?.pop() || 'default'
+      
+      console.log('组件Token数据：', {
+        componentTokenKey,
+        semanticTokenPath,
+        componentName,
+        variantName,
+        stateName,
+        componentUsage,
+        componentTokenPath,
+        styleProp,
+        row
+      })
+      
+      // 检查必要字段
+      if (!componentName || !variantName || !semanticTokenPath || !componentTokenPath) {
+        console.log('跳过不完整的组件Token数据', {
+          componentName,
+          variantName,
+          semanticTokenPath,
+          componentTokenPath
+        })
+        return
+      }
+      
+      // 创建或更新组件Token
+      if (!componentTokensMap.has(componentTokenKey)) {
+        componentTokensMap.set(componentTokenKey, {
+          type: 'component',
+          usage: componentUsage,
+          styles: {}
+        })
+      }
+      
+      // 将样式属性添加到styles对象中
+      const tokenData = componentTokensMap.get(componentTokenKey)
+      if (!tokenData.styles) {
+        tokenData.styles = {}
+      }
+      if (!tokenData.styles[styleProp]) {
+        tokenData.styles[styleProp] = {}
+      }
+      tokenData.styles[styleProp].semanticToken = semanticTokenPath
+      componentTokensMap.set(componentTokenKey, tokenData)
+    }
   })
+
+  // 准备新的数据结构
+  const newBaseTokens = {}
+  const newSemanticTokens = {}
+  const newComponentTokens = {}
 
   // 重建baseTokens
   baseTokensMap.forEach((tokenData, key) => {
     const category = tokenData.category
-    if (!baseTokens[category]) {
-      baseTokens[category] = {}
+    if (!newBaseTokens[category]) {
+      newBaseTokens[category] = {}
     }
     const [, name] = key.split('.')
-    baseTokens[category][name] = {
-      value: tokenData.value,
-      type: tokenData.type,
-      usage: tokenData.usage
+    if (name && tokenData.value !== undefined) {
+      newBaseTokens[category][name] = {
+        value: tokenData.value,
+        type: tokenData.type || 'color',  // 提供默认类型
+        usage: tokenData.usage || ''
+      }
+    } else {
+      console.warn('跳过无效的基础Token:', { key, tokenData })
     }
   })
 
   // 重建semanticTokens
   semanticTokensMap.forEach((tokenData, key) => {
     const category = tokenData.category
-    if (!semanticTokens[category]) {
-      semanticTokens[category] = {}
+    if (!newSemanticTokens[category]) {
+      newSemanticTokens[category] = {}
     }
     const [, name] = key.split('.')
-    semanticTokens[category][name] = {
-      value: tokenData.value,
-      type: tokenData.type,
-      usage: tokenData.usage,
-      baseToken: tokenData.baseToken
+    if (name && tokenData.value !== undefined && tokenData.baseToken) {
+      newSemanticTokens[category][name] = {
+        value: tokenData.value,
+        type: tokenData.type || 'background',  // 提供默认类型
+        usage: tokenData.usage || '',
+        baseToken: tokenData.baseToken
+      }
+    } else {
+      console.warn('跳过无效的语义Token:', { key, tokenData })
     }
   })
 
-  // 重建componentTokens - 新的扁平化结构
+  // 重建componentTokens - 支持新的组件Token结构
   componentTokensMap.forEach((tokenData, key) => {
-    const [category, name] = key.split('.')
-    if (!componentTokens[category]) {
-      componentTokens[category] = {}
+    const [componentName, ...rest] = key.split('-')
+    if (!componentName) {
+      console.warn('跳过无效的组件Token:', { key, tokenData })
+      return
+    }
+
+    if (!newComponentTokens[componentName]) {
+      newComponentTokens[componentName] = {}
     }
     
-    componentTokens[category][name] = {
-      type: tokenData.type,
-      usage: tokenData.usage,
-      semanticToken: tokenData.semanticToken
+    if (tokenData.styles && Object.keys(tokenData.styles).length > 0) {
+      newComponentTokens[componentName][key] = {
+        type: tokenData.type || 'component',  // 提供默认类型
+        usage: tokenData.usage || '',
+        styles: tokenData.styles
+      }
+    } else {
+      console.warn('跳过无效的组件Token样式:', { key, tokenData })
     }
   })
+
+  console.log('重建后的数据结构:', {
+    baseTokens: newBaseTokens,
+    semanticTokens: newSemanticTokens,
+    componentTokens: newComponentTokens
+  })
+
+  // 一次性替换所有数据
+  // 先创建临时的空对象
+  const tempBaseTokens = {}
+  const tempSemanticTokens = {}
+  const tempComponentTokens = {}
+
+  // 复制新数据到临时对象
+  Object.assign(tempBaseTokens, newBaseTokens)
+  Object.assign(tempSemanticTokens, newSemanticTokens)
+  Object.assign(tempComponentTokens, newComponentTokens)
+
+  // 清空原有数据
+  Object.keys(baseTokens).forEach(key => delete baseTokens[key])
+  Object.keys(semanticTokens).forEach(key => delete semanticTokens[key])
+  Object.keys(componentTokens).forEach(key => delete componentTokens[key])
+
+  // 使用临时对象更新原有数据
+  Object.assign(baseTokens, tempBaseTokens)
+  Object.assign(semanticTokens, tempSemanticTokens)
+  Object.assign(componentTokens, tempComponentTokens)
+
+  // 返回导入的数据统计
+  console.log('导入的数据：', {
+    baseTokens: Array.from(baseTokensMap.keys()),
+    semanticTokens: Array.from(semanticTokensMap.keys()),
+    componentTokens: Array.from(componentTokensMap.keys()),
+    rawData: csvData
+  })
+  
+  // 使用getAllTokens来获取完整的Token数据
+  const allTokens = getAllTokens()
+  const uniqueBaseTokenNames = new Set()
+  const uniqueSemanticTokenNames = new Set()
+  const uniqueComponentTokenNames = new Set()
+
+  allTokens.forEach(token => {
+    if (token.baseToken) uniqueBaseTokenNames.add(token.baseToken)
+    if (token.semanticToken) uniqueSemanticTokenNames.add(token.semanticToken)
+    if (token.componentToken) {
+      // 只取组件Token的主要部分（不包含样式属性）
+      const mainPart = token.componentToken.split('.').slice(0, 2).join('.')
+      uniqueComponentTokenNames.add(mainPart)
+    }
+  })
+
+  console.log('统计结果：', {
+    baseTokens: Array.from(uniqueBaseTokenNames),
+    semanticTokens: Array.from(uniqueSemanticTokenNames),
+    componentTokens: Array.from(uniqueComponentTokenNames)
+  })
+
+  return {
+    baseTokenCount: uniqueBaseTokenNames.size,
+    semanticTokenCount: uniqueSemanticTokenNames.size,
+    componentTokenCount: uniqueComponentTokenNames.size,
+    totalRows: csvData.length
+  }
 }
 
 // CSV导入辅助函数
@@ -1093,19 +1313,18 @@ function getComponentKeyFromLabel(label) {
 
 function getVariantKeyFromLabel(label) {
   const variantLabels = {
-    // 按钮变体
-    '主按钮背景': 'button-primary-bg',
-    '主按钮文字': 'button-primary-text',
-    '次要按钮背景': 'button-secondary-bg',
-    '次要按钮文字': 'button-secondary-text',
-    '次要按钮边框': 'button-secondary-border',
+    // 按钮变体 - 按完整组合定义
+    '主按钮': 'primary',
+    '次要按钮': 'secondary',
+    '小尺寸主按钮': 'primary-small',
+    '大尺寸主按钮': 'primary-large',
     
-    // 输入框变体
-    '输入框背景': 'input-bg',
-    '输入框边框': 'input-border',
-    '输入框文字': 'input-text',
+    // 输入框变体 - 按完整组合定义
+    '标准输入框': 'standard',
+    '小尺寸输入框': 'small',
+    '大尺寸输入框': 'large',
     
-    // 通用变体
+    // 通用变体 - 保持原有逻辑
     '主要文字': 'text-primary',
     '次要文字': 'text-secondary',
     '弱化文字': 'text-muted',
