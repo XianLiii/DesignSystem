@@ -47,6 +47,7 @@ import ButtonComponent from './components/ButtonComponent.vue'
 import InputComponent from './components/InputComponent.vue'
 import Instructions from './components/Instructions.vue'
 import TokenOverview from './components/TokenOverview.vue'
+import TableComponent from './components/TableComponent.vue'
 
 const currentPage = ref('instructions')
 const isNavigating = ref(false)
@@ -56,7 +57,8 @@ const navItems = [
   { id: 'overview', name: 'Design Token概述' },
   { id: 'tokens', name: '全量Token' },
   { id: 'button', name: 'Button' },
-  { id: 'input', name: 'Input' }
+  { id: 'input', name: 'Input' },
+  { id: 'table', name: 'Table' }
 ]
 
 const currentComponent = computed(() => {
@@ -65,7 +67,8 @@ const currentComponent = computed(() => {
     overview: TokenOverview,
     tokens: TokenList,
     button: ButtonComponent,
-    input: InputComponent
+    input: InputComponent,
+    table: TableComponent
   }
   return components[currentPage.value]
 })

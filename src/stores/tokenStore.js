@@ -130,6 +130,18 @@ export const semanticTokens = reactive({
       usage: '禁用状态表面的背景色',
       baseToken: 'colors.gray-100'
     },
+    'accent-surface': {
+      value: 'blue-50',
+      type: 'background',
+      usage: '强调色背景表面',
+      baseToken: 'colors.blue-50'
+    },
+    'edited-surface': {
+      value: 'yellow-50',
+      type: 'background',
+      usage: '已编辑内容的背景色',
+      baseToken: 'colors.yellow-50'
+    },
     'error-surface': { 
       value: 'red-50', 
       type: 'background', 
@@ -251,6 +263,24 @@ export const semanticTokens = reactive({
       type: 'border', 
       usage: '成功状态的边框色',
       baseToken: 'colors.green-300'
+    },
+    'default-width': {
+      value: 'border-width-thin',
+      type: 'border',
+      usage: '默认边框宽度',
+      baseToken: 'border.border-width-thin'
+    },
+    'default-border': {
+      value: 'gray-300',
+      type: 'border',
+      usage: '默认边框颜色',
+      baseToken: 'colors.gray-300'
+    },
+    'focus-border': {
+      value: 'blue-400',
+      type: 'border',
+      usage: '聚焦状态边框颜色',
+      baseToken: 'colors.blue-400'
     }
   },
 
@@ -273,6 +303,18 @@ export const semanticTokens = reactive({
       type: 'spacing', 
       usage: '宽松布局的间距',
       baseToken: 'spacing.spacing-3'
+    },
+    'normal-padding': {
+      value: 'spacing-2',
+      type: 'spacing',
+      usage: '标准内边距',
+      baseToken: 'spacing.spacing-2'
+    },
+    'compact-padding': {
+      value: 'spacing-1',
+      type: 'spacing',
+      usage: '紧凑内边距',
+      baseToken: 'spacing.spacing-1'
     },
     'spacious-spacing': { 
       value: 'spacing-4', 
@@ -326,6 +368,24 @@ export const semanticTokens = reactive({
       usage: '强调文字的字重',
       baseToken: 'typography.font-weight-bold'
     },
+    'body-size': {
+      value: 'font-size-base',
+      type: 'typography',
+      usage: '正文字体大小',
+      baseToken: 'typography.font-size-base'
+    },
+    'small-size': {
+      value: 'font-size-sm',
+      type: 'typography',
+      usage: '小号字体大小',
+      baseToken: 'typography.font-size-sm'
+    },
+    'emphasis-weight': {
+      value: 'font-weight-bold',
+      type: 'typography',
+      usage: '强调字体粗细',
+      baseToken: 'typography.font-weight-bold'
+    },
     'normal-text-weight': { 
       value: 'font-weight-normal', 
       type: 'typography', 
@@ -336,6 +396,12 @@ export const semanticTokens = reactive({
 
   // 圆角语义（Border Radius）
   radius: {
+    'small-radius': {
+      value: 'border-radius-sm',
+      type: 'border',
+      usage: '小圆角效果',
+      baseToken: 'border.border-radius-sm'
+    },
     'subtle-radius': { 
       value: 'border-radius-sm', 
       type: 'border', 
@@ -487,6 +553,8 @@ export const componentTokens = reactive({
     // 主按钮变体 - 完整样式组合
     'button-primary-default': {
       type: 'component',
+      variant: 'primary',
+      state: 'default',
       usage: '主按钮默认状态的完整样式组合',
       styles: {
         background: { semanticToken: 'surface.primary-surface' },
@@ -501,6 +569,8 @@ export const componentTokens = reactive({
     },
     'button-primary-hover': {
       type: 'component',
+      variant: 'primary',
+      state: 'hover',
       usage: '主按钮悬停状态的完整样式组合',
       styles: {
         background: { semanticToken: 'surface.primary-surface-hover' },
@@ -515,6 +585,8 @@ export const componentTokens = reactive({
     },
     'button-primary-active': {
       type: 'component',
+      variant: 'primary',
+      state: 'active',
       usage: '主按钮激活状态的完整样式组合',
       styles: {
         background: { semanticToken: 'surface.primary-surface-active' },
@@ -529,6 +601,8 @@ export const componentTokens = reactive({
     },
     'button-primary-disabled': {
       type: 'component',
+      variant: 'primary',
+      state: 'disabled',
       usage: '主按钮禁用状态的完整样式组合',
       styles: {
         background: { semanticToken: 'surface.disabled-surface' },
@@ -541,10 +615,30 @@ export const componentTokens = reactive({
         transition: { semanticToken: 'animation.quick-transition' }
       }
     },
+    'button-primary-focus': {
+      type: 'component',
+      variant: 'primary',
+      state: 'focus',
+      usage: '主按钮聚焦状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.primary-surface' },
+        text: { semanticToken: 'text.primary-text' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' },
+        boxShadow: { semanticToken: 'shadow.moderate-shadow' },
+        transition: { semanticToken: 'animation.quick-transition' },
+        outline: { value: '2px solid #3b82f6' },
+        outlineOffset: { value: '2px' }
+      }
+    },
 
     // 次要按钮变体 - 完整样式组合
     'button-secondary-default': {
       type: 'component',
+      variant: 'secondary',
+      state: 'default',
       usage: '次要按钮默认状态的完整样式组合',
       styles: {
         background: { semanticToken: 'surface.secondary-surface' },
@@ -560,6 +654,8 @@ export const componentTokens = reactive({
     },
     'button-secondary-hover': {
       type: 'component',
+      variant: 'secondary',
+      state: 'hover',
       usage: '次要按钮悬停状态的完整样式组合',
       styles: {
         background: { semanticToken: 'surface.secondary-surface-hover' },
@@ -575,6 +671,8 @@ export const componentTokens = reactive({
     },
     'button-secondary-active': {
       type: 'component',
+      variant: 'secondary',
+      state: 'active',
       usage: '次要按钮激活状态的完整样式组合',
       styles: {
         background: { semanticToken: 'surface.secondary-surface-active' },
@@ -590,6 +688,8 @@ export const componentTokens = reactive({
     },
     'button-secondary-disabled': {
       type: 'component',
+      variant: 'secondary',
+      state: 'disabled',
       usage: '次要按钮禁用状态的完整样式组合',
       styles: {
         background: { semanticToken: 'surface.disabled-surface' },
@@ -603,10 +703,32 @@ export const componentTokens = reactive({
         transition: { semanticToken: 'animation.quick-transition' }
       }
     },
+    'button-secondary-focus': {
+      type: 'component',
+      variant: 'secondary',
+      state: 'focus',
+      usage: '次要按钮聚焦状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.secondary-surface' },
+        text: { semanticToken: 'text.secondary-text' },
+        border: { semanticToken: 'border.primary-border' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' },
+        boxShadow: { semanticToken: 'shadow.moderate-shadow' },
+        transition: { semanticToken: 'animation.quick-transition' },
+        outline: { value: '2px solid #3b82f6' },
+        outlineOffset: { value: '2px' }
+      }
+    },
 
     // 小按钮变体 - 主按钮的小尺寸版本
     'button-primary-small-default': {
       type: 'component',
+      variant: 'primary',
+      size: 'small',
+      state: 'default',
       usage: '小尺寸主按钮默认状态的完整样式组合',
       styles: {
         background: { semanticToken: 'surface.primary-surface' },
@@ -621,6 +743,9 @@ export const componentTokens = reactive({
     // 大按钮变体 - 主按钮的大尺寸版本
     'button-primary-large-default': {
       type: 'component',
+      variant: 'primary',
+      size: 'large',
+      state: 'default',
       usage: '大尺寸主按钮默认状态的完整样式组合',
       styles: {
         background: { semanticToken: 'surface.primary-surface' },
@@ -630,6 +755,85 @@ export const componentTokens = reactive({
         fontSize: { semanticToken: 'typography.heading-text-size' },
         fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
       }
+    },
+
+    // Ghost按钮变体 - 透明背景的按钮
+    'button-ghost-default': {
+      type: 'component',
+      variant: 'ghost',
+      state: 'default',
+      usage: '幽灵按钮默认状态的完整样式组合',
+      styles: {
+        background: { value: 'transparent' },
+        text: { semanticToken: 'text.primary-text' },
+        border: { value: 'none' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+      }
+    },
+    'button-ghost-hover': {
+      type: 'component',
+      variant: 'ghost',
+      state: 'hover',
+      usage: '幽灵按钮悬停状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.secondary-surface' },
+        text: { semanticToken: 'text.primary-text' },
+        border: { value: 'none' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+      }
+    },
+    'button-ghost-active': {
+      type: 'component',
+      variant: 'ghost',
+      state: 'active',
+      usage: '幽灵按钮激活状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.secondary-surface-active' },
+        text: { semanticToken: 'text.primary-text' },
+        border: { value: 'none' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+      }
+    },
+    'button-ghost-disabled': {
+      type: 'component',
+      variant: 'ghost',
+      state: 'disabled',
+      usage: '幽灵按钮禁用状态的完整样式组合',
+      styles: {
+        background: { value: 'transparent' },
+        text: { semanticToken: 'text.disabled-text' },
+        border: { value: 'none' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' }
+      }
+    },
+    'button-ghost-focus': {
+      type: 'component',
+      variant: 'ghost',
+      state: 'focus',
+      usage: '幽灵按钮聚焦状态的完整样式组合',
+      styles: {
+        background: { value: 'transparent' },
+        text: { semanticToken: 'text.primary-text' },
+        border: { value: 'none' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        fontWeight: { semanticToken: 'typography.emphasis-text-weight' },
+        outline: { value: '2px solid #3b82f6' },
+        outlineOffset: { value: '2px' }
+      }
     }
   },
 
@@ -637,6 +841,8 @@ export const componentTokens = reactive({
     // 标准输入框变体 - 完整样式组合
     'input-standard-default': {
       type: 'component',
+      variant: 'standard',
+      state: 'default',
       usage: '标准输入框默认状态的完整样式组合',
       styles: {
         background: { semanticToken: 'surface.input-surface' },
@@ -650,8 +856,27 @@ export const componentTokens = reactive({
         boxShadow: { semanticToken: 'shadow.subtle-shadow' }
       }
     },
+    'input-standard-hover': {
+      type: 'component',
+      variant: 'standard',
+      state: 'hover',
+      usage: '标准输入框悬停状态的完整样式组合',
+      styles: {
+        background: { semanticToken: 'surface.input-surface' },
+        border: { semanticToken: 'border.interactive-border-hover' },
+        text: { semanticToken: 'text.body-text' },
+        placeholder: { semanticToken: 'text.muted-text' },
+        borderRadius: { semanticToken: 'radius.moderate-radius' },
+        padding: { semanticToken: 'spacing.cozy-spacing' },
+        fontSize: { semanticToken: 'typography.body-text-size' },
+        transition: { semanticToken: 'animation.quick-transition' },
+        boxShadow: { semanticToken: 'shadow.subtle-shadow' }
+      }
+    },
     'input-standard-focus': {
       type: 'component',
+      variant: 'standard',
+      state: 'focus',
       usage: '标准输入框聚焦状态的完整样式组合',
       styles: {
         background: { semanticToken: 'surface.input-surface' },
@@ -667,6 +892,8 @@ export const componentTokens = reactive({
     },
     'input-standard-disabled': {
       type: 'component',
+      variant: 'standard',
+      state: 'disabled',
       usage: '标准输入框禁用状态的完整样式组合',
       styles: {
         background: { semanticToken: 'surface.disabled-surface' },
@@ -682,6 +909,8 @@ export const componentTokens = reactive({
     },
     'input-standard-error': {
       type: 'component',
+      variant: 'standard',
+      state: 'error',
       usage: '标准输入框错误状态的完整样式组合',
       styles: {
         background: { semanticToken: 'surface.error-surface' },
@@ -697,6 +926,8 @@ export const componentTokens = reactive({
     },
     'input-standard-success': {
       type: 'component',
+      variant: 'standard',
+      state: 'success',
       usage: '标准输入框成功状态的完整样式组合',
       styles: {
         background: { semanticToken: 'surface.success-surface' },
@@ -714,6 +945,8 @@ export const componentTokens = reactive({
     // 小尺寸输入框变体
     'input-small-default': {
       type: 'component',
+      variant: 'small',
+      state: 'default',
       usage: '小尺寸输入框默认状态的完整样式组合',
       styles: {
         background: { semanticToken: 'surface.input-surface' },
@@ -731,6 +964,8 @@ export const componentTokens = reactive({
     // 大尺寸输入框变体
     'input-large-default': {
       type: 'component',
+      variant: 'large',
+      state: 'default',
       usage: '大尺寸输入框默认状态的完整样式组合',
       styles: {
         background: { semanticToken: 'surface.input-surface' },
@@ -848,6 +1083,208 @@ export const componentTokens = reactive({
       usage: '明显圆角的默认界面应用',
       semanticToken: 'radius.prominent-radius'
     }
+  },
+  
+  // 表格组件Token
+  table: {
+    // 标准表格
+    'table-standard-default': {
+      type: 'component',
+      variant: 'standard',
+      state: 'default',
+      usage: '标准表格默认样式',
+      styles: {
+        backgroundColor: { semanticToken: 'surface.primary-surface' },
+        border: { semanticToken: 'border.subtle-border' },
+        borderWidth: { semanticToken: 'border.default-width' },
+        borderRadius: { semanticToken: 'radius.small-radius' }
+      }
+    },
+    'table-standard-header-row': {
+      type: 'component',
+      variant: 'standard',
+      state: 'default',
+      usage: '标准表格表头行样式',
+      styles: {
+        backgroundColor: { semanticToken: 'surface.secondary-surface' },
+        borderBottom: { semanticToken: 'border.default-border' }
+      }
+    },
+    'table-standard-header-cell': {
+      type: 'component',
+      variant: 'standard',
+      state: 'default',
+      usage: '标准表格表头单元格样式',
+      styles: {
+        padding: { semanticToken: 'spacing.normal-padding' },
+        fontWeight: { semanticToken: 'typography.emphasis-weight' },
+        color: { semanticToken: 'text.primary-text' },
+        fontSize: { semanticToken: 'typography.body-size' }
+      }
+    },
+    'table-standard-body-row': {
+      type: 'component',
+      variant: 'standard',
+      state: 'default',
+      usage: '标准表格数据行样式',
+      styles: {
+        backgroundColor: { semanticToken: 'surface.primary-surface' },
+        borderBottom: { semanticToken: 'border.subtle-border' },
+        transition: { semanticToken: 'animation.quick-transition' }
+      }
+    },
+    'table-standard-body-row-stripe': {
+      type: 'component',
+      variant: 'standard',
+      state: 'stripe',
+      usage: '标准表格条纹行样式',
+      styles: {
+        backgroundColor: { semanticToken: 'surface.secondary-surface' },
+        borderBottom: { semanticToken: 'border.subtle-border' }
+      }
+    },
+    'table-standard-body-row-hover': {
+      type: 'component',
+      variant: 'standard',
+      state: 'hover',
+      usage: '标准表格行悬停样式',
+      styles: {
+        backgroundColor: { semanticToken: 'surface.secondary-surface-hover' },
+        borderBottom: { semanticToken: 'border.subtle-border' },
+        transition: { semanticToken: 'animation.quick-transition' }
+      }
+    },
+    'table-standard-cell-readonly': {
+      type: 'component',
+      variant: 'standard',
+      state: 'readonly',
+      usage: '标准表格只读单元格样式',
+      styles: {
+        padding: { semanticToken: 'spacing.normal-padding' },
+        color: { semanticToken: 'text.primary-text' },
+        fontSize: { semanticToken: 'typography.body-size' },
+        backgroundColor: { semanticToken: 'surface.primary-surface' }
+      }
+    },
+    'table-standard-cell-editable': {
+      type: 'component',
+      variant: 'standard',
+      state: 'editable',
+      usage: '标准表格可编辑单元格样式',
+      styles: {
+        padding: { semanticToken: 'spacing.normal-padding' },
+        color: { semanticToken: 'text.primary-text' },
+        fontSize: { semanticToken: 'typography.body-size' },
+        backgroundColor: { semanticToken: 'surface.primary-surface' },
+        cursor: { value: 'pointer' }
+      }
+    },
+    'table-standard-cell-disabled': {
+      type: 'component',
+      variant: 'standard',
+      state: 'disabled',
+      usage: '标准表格禁用单元格样式',
+      styles: {
+        padding: { semanticToken: 'spacing.normal-padding' },
+        color: { semanticToken: 'text.muted-text' },
+        fontSize: { semanticToken: 'typography.body-size' },
+        backgroundColor: { semanticToken: 'surface.disabled-surface' },
+        cursor: { value: 'not-allowed' }
+      }
+    },
+    'table-standard-cell-edited': {
+      type: 'component',
+      variant: 'standard',
+      state: 'edited',
+      usage: '标准表格已编辑单元格样式',
+      styles: {
+        padding: { semanticToken: 'spacing.normal-padding' },
+        color: { semanticToken: 'text.primary-text' },
+        fontSize: { semanticToken: 'typography.body-size' },
+        backgroundColor: { semanticToken: 'surface.accent-surface' },
+        borderLeft: { semanticToken: 'border.primary-border' },
+        borderLeftWidth: { value: '3px' }
+      }
+    },
+    'table-standard-cell-input': {
+      type: 'component',
+      variant: 'standard',
+      state: 'editing',
+      usage: '标准表格编辑输入框样式',
+      styles: {
+        padding: { semanticToken: 'spacing.compact-padding' },
+        fontSize: { semanticToken: 'typography.body-size' },
+        border: { semanticToken: 'border.focus-border' },
+        borderRadius: { semanticToken: 'radius.small-radius' }
+      }
+    },
+    
+    // 紧凑型表格
+    'table-compact-default': {
+      type: 'component',
+      variant: 'compact',
+      state: 'default',
+      usage: '紧凑型表格默认样式',
+      styles: {
+        backgroundColor: { semanticToken: 'surface.primary-surface' },
+        border: { semanticToken: 'border.subtle-border' },
+        borderWidth: { semanticToken: 'border.default-width' },
+        borderRadius: { semanticToken: 'radius.small-radius' }
+      }
+    },
+    'table-compact-header-row': {
+      type: 'component',
+      variant: 'compact',
+      state: 'default',
+      usage: '紧凑型表格表头行样式',
+      styles: {
+        backgroundColor: { semanticToken: 'surface.secondary-surface' },
+        borderBottom: { semanticToken: 'border.default-border' }
+      }
+    },
+    'table-compact-header-cell': {
+      type: 'component',
+      variant: 'compact',
+      state: 'default',
+      usage: '紧凑型表格表头单元格样式',
+      styles: {
+        padding: { semanticToken: 'spacing.compact-padding' },
+        fontWeight: { semanticToken: 'typography.emphasis-weight' },
+        color: { semanticToken: 'text.primary-text' },
+        fontSize: { semanticToken: 'typography.small-size' }
+      }
+    },
+    'table-compact-body-row': {
+      type: 'component',
+      variant: 'compact',
+      state: 'default',
+      usage: '紧凑型表格数据行样式',
+      styles: {
+        backgroundColor: { semanticToken: 'surface.primary-surface' },
+        borderBottom: { semanticToken: 'border.subtle-border' }
+      }
+    },
+    'table-compact-body-row-stripe': {
+      type: 'component',
+      variant: 'compact',
+      state: 'stripe',
+      usage: '紧凑型表格条纹行样式',
+      styles: {
+        backgroundColor: { semanticToken: 'surface.secondary-surface' },
+        borderBottom: { semanticToken: 'border.subtle-border' }
+      }
+    },
+    'table-compact-cell-readonly': {
+      type: 'component',
+      variant: 'compact',
+      state: 'readonly',
+      usage: '紧凑型表格只读单元格样式',
+      styles: {
+        padding: { semanticToken: 'spacing.compact-padding' },
+        color: { semanticToken: 'text.primary-text' },
+        fontSize: { semanticToken: 'typography.small-size' }
+      }
+    }
   }
 })
 
@@ -938,6 +1375,9 @@ export function getAllTokens() {
             semanticTokenData = semanticTokens[semanticCategory]?.[semanticTokenName]
             baseTokenPath = semanticTokenData?.baseToken
             baseTokenData = baseTokenPath ? getBaseTokenData(baseTokenPath) : null
+          } else if (styleData.value) {
+            // 处理直接值的情况
+            baseTokenData = { value: styleData.value, type: styleProp, usage: '直接定义值' }
           }
 
           allTokens.push({
@@ -946,13 +1386,13 @@ export function getAllTokens() {
             variant: variant,
             componentState: componentState,
             componentUsage: `${token.usage} - ${styleProp}样式`,
-            semanticToken: semanticTokenPath || '',
-            semanticType: semanticTokenData?.type || '',
-            semanticUsage: semanticTokenData?.usage || '',
-            baseToken: baseTokenPath || '',
-            baseType: baseTokenData?.type || '',
-            baseUsage: baseTokenData?.usage || '',
-            baseValue: baseTokenData?.value || ''
+            semanticToken: semanticTokenPath || '-',
+            semanticType: semanticTokenData?.type || '-',
+            semanticUsage: semanticTokenData?.usage || '-',
+            baseToken: baseTokenPath || '-',
+            baseType: baseTokenData?.type || styleProp,
+            baseUsage: baseTokenData?.usage || '直接定义值',
+            baseValue: baseTokenData?.value || styleData.value || '-'
           })
         })
       } else if (token.semanticToken) {
@@ -1025,6 +1465,9 @@ export function getComponentTokens(componentName) {
           semanticTokenData = semanticTokens[semanticCategory]?.[semanticTokenName]
           baseTokenPath = semanticTokenData?.baseToken
           baseTokenData = baseTokenPath ? getBaseTokenData(baseTokenPath) : null
+        } else if (styleData.value) {
+          // 处理直接值的情况
+          baseTokenData = { value: styleData.value, type: styleProp, usage: '直接定义值' }
         }
 
         tokens.push({
@@ -1033,13 +1476,13 @@ export function getComponentTokens(componentName) {
           variant: variant,
           componentState: componentState,
           componentUsage: `${token.usage} - ${styleProp}样式`,
-          semanticToken: semanticTokenPath || '',
-          semanticType: semanticTokenData?.type || '',
-          semanticUsage: semanticTokenData?.usage || '',
-          baseToken: baseTokenPath || '',
-          baseType: baseTokenData?.type || '',
-          baseUsage: baseTokenData?.usage || '',
-          baseValue: baseTokenData?.value || ''
+          semanticToken: semanticTokenPath || '-',
+          semanticType: semanticTokenData?.type || '-',
+          semanticUsage: semanticTokenData?.usage || '-',
+          baseToken: baseTokenPath || '-',
+          baseType: baseTokenData?.type || styleProp,
+          baseUsage: baseTokenData?.usage || '直接定义值',
+          baseValue: baseTokenData?.value || styleData.value || '-'
         })
       })
     } else if (token.semanticToken) {

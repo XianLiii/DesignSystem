@@ -54,6 +54,16 @@
             </button>
           </div>
         </div>
+
+        <!-- Size Variants -->
+        <div>
+          <h3 class="text-lg font-semibold mb-4">尺寸变体</h3>
+          <div class="flex items-center space-x-4">
+            <button class="bg-gray-900 text-white px-3 py-1 rounded text-xs">Small</button>
+            <button class="bg-gray-900 text-white px-4 py-2 rounded text-sm">Medium</button>
+            <button class="bg-gray-900 text-white px-6 py-3 rounded text-base">Large</button>
+          </div>
+        </div>
       </div>
     </section>
 
